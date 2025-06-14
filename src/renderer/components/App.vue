@@ -1,9 +1,6 @@
-<!-- src/renderer/App.vue -->
 <template>
   <AppLayout>
-    <template #title>
-      Eloqua
-    </template>
+    <template #title> Eloqua </template>
     
     <template #navigation>
       <nav class="flex space-x-6">
@@ -12,12 +9,6 @@
           :class="navLinkClass"
         >
           Upload
-        </router-link>
-        <router-link 
-          to="/analysis" 
-          :class="navLinkClass"
-        >
-          Analysis
         </router-link>
         <router-link 
           to="/coach" 
@@ -34,8 +25,8 @@
 
 <script setup>
 import { computed } from 'vue'
-import AppLayout from './components/AppLayout.vue'
-import { useTheme } from './shared/composables/useTheme.js'
+import AppLayout from './AppLayout.vue'
+import { useTheme } from '../../shared/composables/useTheme.js';
 
 const { isDark } = useTheme()
 

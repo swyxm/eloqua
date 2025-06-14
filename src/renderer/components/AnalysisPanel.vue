@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import { useTheme } from '../shared/composables/useTheme.js'
+import { useTheme } from '../../shared/composables/useTheme.js';
 const { isDark } = useTheme()
 const props = defineProps({
   analysis: {

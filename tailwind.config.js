@@ -7,7 +7,6 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // New Debate Palette
         'creme-light': '#eae6e2', // Soft off-white, ideal for background
         'ui-card-bg': '#fbfbfb', // A very light, warm off-white for card backgrounds
         'blue-gray-light': '#73828e', // Muted blue-gray

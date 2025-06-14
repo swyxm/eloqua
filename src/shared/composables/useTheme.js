@@ -1,57 +1,51 @@
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 
-const isDark = ref(false)
-
-export function useTheme() {
-  const toggleTheme = () => {
-    isDark.value = !isDark.value
-    updateTheme()
+const isDarkMode = ref(false)
+const initializeTheme = () => {
+  if (typeof window !== 'undefined') {
+    const savedTheme = localStorage.getItem('eloqua-theme')
+    if (savedTheme) {
+      isDarkMode.value = savedTheme === 'dark'
+    } else {
+      isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches
+    }
+        updateDocumentTheme()
   }
+}
 
-  const setTheme = (dark) => {
-    isDark.value = dark
-    updateTheme()
-  }
-
-  const updateTheme = () => {
-    if (isDark.value) {
+const updateDocumentTheme = () => {
+  if (typeof window !== 'undefined') {
+    if (isDarkMode.value) {
       document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
+      localStorage.setItem('eloqua-theme', 'dark')
     } else {
       document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
+      localStorage.setItem('eloqua-theme', 'light')
     }
   }
+}
 
-  const initTheme = () => {
-    const savedTheme = localStorage.getItem('theme')
-    if (savedTheme) {
-      isDark.value = savedTheme === 'dark'
-    } else {
-      isDark.value = window.matchMedia('(prefers-color-scheme: dark)').matches
-    }
-    updateTheme()
+watch(isDarkMode, updateDocumentTheme)
+
+export function useTheme() {
+  if (typeof window !== 'undefined' && !document.documentElement.classList.contains('dark') && isDarkMode.value) {
+    initializeTheme()
   }
-
-  const themeSwitcheroo = () => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    mediaQuery.addEventListener('change', (e) => {
-      if (!localStorage.getItem('theme')) {
-        isDark.value = e.matches
-        updateTheme()
-      }
-    })
+  const toggleTheme = () => {
+    isDarkMode.value = !isDarkMode.value
   }
-
-  onMounted(() => {
-    initTheme()
-    themeSwitcheroo()
-  })
+  const setTheme = (theme) => {
+    isDarkMode.value = theme === 'dark'
+  }
+  const theme = computed(() => isDarkMode.value ? 'dark' : 'light')
 
   return {
-    isDark,
+    isDark: computed(() => isDarkMode.value),
+    theme,
     toggleTheme,
-    setTheme,
-    initTheme
+    setTheme
   }
+}
+if (typeof window !== 'undefined') {
+  initializeTheme()
 }
