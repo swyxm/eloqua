@@ -1,7 +1,7 @@
 # Whisper Model Configuration Guide
 
 ## Overview
-This speech analyzer uses OpenAI's Whisper models for transcription & analysis. You can choose different model sizes based on how much you're willing to download. Will say, I've run all of them, default is set to Small because it hallucinated the least but even Base works just fine. Larger models may risk hallucination but have the best accuracy. If you are willing to wait for the extra processing time for a deeper understanding of your argumentation and flow, use the Large model.
+This speech analyzer runs OpenAI's Whisper models locally for transcription & analysis. This was done to save costs from API calls and offer the user modularity on their model choice. You can choose different model sizes based on how much you're willing to download. I will say, I've run all of them, default is set to Small because it hallucinated the least but even Base works just fine. Larger models may risk hallucination but have the best accuracy. If you are willing to wait for the extra processing time for a deeper understanding of your argumentation and flow, use the Large model.
 
 ## Available Whisper Models
 | Model | Size | VRAM | Speed | Accuracy | Best For |

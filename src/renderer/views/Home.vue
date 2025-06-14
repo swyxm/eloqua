@@ -3,10 +3,9 @@
     <div class="max-w-7xl mx-auto space-y-8">
       <header class="text-center mb-8">
         <h1 class="text-5xl font-extrabold text-blue-gray-dark mb-2 tracking-tight">Eloqua</h1>
-        <p class="text-blue-gray-dark/80 text-lg">AI-powered analysis for your debate speeches</p>
+        <p class="text-blue-gray-dark/80 text-lg">Your AI Debate Coach</p>
       </header>
 
-      <!-- Analyze Speech Panel (Full Width at Top) -->
       <div class="bg-ui-card-bg backdrop-blur-md rounded-xl shadow-xl p-8 border border-blue-gray-light transform transition-all duration-300 hover:scale-[1.01]">
         <h2 class="text-3xl font-bold text-blue-gray-dark mb-6">Analyze Speech</h2>
         <div class="space-y-6">
@@ -160,10 +159,10 @@
                 <button
                   v-for="place in roundPlacements" 
                   :key="place.value"
-                  @click="placeInRound = place.value"
+                  @click="result = place.value"
                   :class="{
-                    'bg-blue-gray-dark text-creme-light': placeInRound === place.value,
-                    'bg-white/60 text-blue-gray-dark hover:bg-blue-gray-light/10': placeInRound !== place.value
+                    'bg-blue-gray-dark text-creme-light': result === place.value,
+                    'bg-white/60 text-blue-gray-dark hover:bg-blue-gray-light/10': result !== place.value
                   }"
                   class="px-4 py-2 border border-blue-gray-light rounded-lg transition-all duration-200 text-center font-medium flex items-center justify-center space-x-1"
                 >
@@ -263,11 +262,11 @@ export default {
   setup() {
     const selectedFile = ref(null);
     const motion = ref('');
-    const format = ref(''); // Initialize as empty for "Select a format" option
+    const format = ref(''); 
     const position = ref('');
-    const roundType = ref(''); // New: 'practice' or 'tournament'
-    const tournamentName = ref(''); // New: Name of the tournament if roundType is 'tournament'
-    const placeInRound = ref('');
+    const roundType = ref(''); 
+    const tournamentName = ref('');
+    const result = ref('');
     const specificFeedback = ref('');
     const analysis = ref(null);
     const isLoading = ref(false);
@@ -327,19 +326,16 @@ export default {
       }
     });
 
-    // Watch for format changes to reset relevant fields
+    // reset check
     watch(format, (newFormat) => {
-      // Reset position if format changes and previously selected position is invalid for new format
       if (position.value && !debatePositions.value.includes(position.value)) {
         position.value = '';
       }
-      // Reset placeInRound if format changes and previously selected placement is invalid for new format
-      if (placeInRound.value && !roundPlacements.value.map(p => p.value).includes(placeInRound.value)) {
-        placeInRound.value = '';
+      if (result.value && !roundPlacements.value.map(p => p.value).includes(result.value)) {
+        result.value = '';
       }
     });
 
-    // Watch for roundType changes to reset tournamentName if type is 'practice'
     watch(roundType, (newType) => {
       if (newType === 'practice') {
         tournamentName.value = '';
@@ -410,24 +406,23 @@ export default {
       const { data, error } = await supabase
         .from('speeches')
         .insert({
-          tournament_id: tournamentName.value ? await getOrCreateTournamentId(tournamentName.value) : null,
+          tournament_id: tournamentName.value ? await fetchTournamentID(tournamentName.value) : null,
           round_number: roundNumber.value,
           round_type: roundType.value,
           debate_format: format.value,
           position: position.value,
           motion: motion.value,
-          place_in_round: placeInRound.value,
+          result: result.value,
           audio_path: selectedFile.value,
           analysis_result: analysisResult
         });
 
       if (!error) {
-        await loadRecentData(); // Refresh recent data
+        await loadRecentData();
       }
     };
 
-    // Get or create tournament ID
-    const getOrCreateTournamentId = async (tournamentName) => {
+    const fetchTournamentID = async (tournamentName) => {
       const { data: existing } = await supabase
         .from('tournaments')
         .select('id')
@@ -453,13 +448,13 @@ export default {
       console.log('File path:', file.path);
       console.log('File name:', file.name);
       
-      // Try different possible file properties
+      // todo: streamline
       const filePath = file.path || file.webkitRelativePath || file.name;
       console.log('Resolved file path:', filePath);
       
       selectedFile.value = filePath;
       console.log('selectedFile.value after setting:', selectedFile.value);
-      // Start background analysis
+      // bg analysis
       isAnalyzing.value = true;
       try {
         backgroundAnalysis.value = await window.electron.ipcRenderer.invoke('analyze-speech', {
@@ -469,7 +464,7 @@ export default {
           position: position.value,
           roundType: roundType.value,
           tournamentName: tournamentName.value,
-          placeInRound: placeInRound.value,
+          result: result.value,
           specificFeedback: specificFeedback.value
         });
       } catch (error) {
@@ -490,7 +485,6 @@ export default {
       isAnalyzing.value = false;
     };
 
-    // Modify handleAnalyze to use background analysis if available
     const handleAnalyze = async () => {
       if (!canAnalyze.value) return;
 
@@ -508,7 +502,7 @@ export default {
             position: position.value,
             roundType: roundType.value,
             tournamentName: tournamentName.value,
-            placeInRound: placeInRound.value,
+            result: result.value,
             specificFeedback: specificFeedback.value
           });
         }
@@ -562,7 +556,7 @@ export default {
       position,
       roundType,
       tournamentName,
-      placeInRound,
+      result,
       specificFeedback,
       analysis,
       isLoading,

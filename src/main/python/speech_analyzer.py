@@ -10,30 +10,24 @@ import urllib.request
 
 # transcription
 def transcribe(audio_path):
-    # Store original SSL context
     original_context = ssl._create_default_https_context
     
-    # Temporarily disable SSL verification for model download
     ssl._create_default_https_context = ssl._create_unverified_context
     
     try:
         model = whisper.load_model("small")
     finally:
-        # Always restore original SSL context
         ssl._create_default_https_context = original_context
     
-    # Transcribe the audio file
     r = model.transcribe(audio_path)
     
-    # Get duration from segments (most reliable method)
     duration = 0
     if 'segments' in r and r['segments']:
-        # Get the end time of the last segment
         duration = max(segment['end'] for segment in r['segments'])
     else:
-        # Fallback: calculate from audio file
+        # fallback: calculate from audio file
         audio = whisper.load_audio(audio_path)
-        duration = len(audio) / 16000  # Whisper uses 16kHz sample rate
+        duration = len(audio) / 16000  # 16kHz sample rate
     
     return r["text"], duration
 
