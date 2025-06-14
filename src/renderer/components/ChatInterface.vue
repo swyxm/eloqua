@@ -1,74 +1,80 @@
 <template>
-  <div class="mt-6 border-t border-slate-200 pt-6">
-    <div class="space-y-4">
-      <div class="space-y-4 max-h-96 overflow-y-auto" ref="chatContainer">
-        <div
-          v-for="(message, index) in messages"
-          :key="index"
-          :class="[
-            'p-4 rounded-lg',
-            message.role === 'user' ? 'bg-ice-blue-50 ml-12' : 'bg-slate-50 mr-12'
-          ]"
-        >
-          <p class="text-slate-700">{{ message.content }}</p>
-          <p class="text-xs text-slate-500 mt-1">
-            {{ new Date(message.timestamp).toLocaleTimeString() }}
-          </p>
-        </div>
+  <div 
+    :class="[
+      'chat-interface rounded-xl backdrop-blur-sm transition-all duration-300',
+      'border',
+      isDark 
+        ? 'bg-dark-surface/50 border-dark-border' 
+        : 'bg-ui-card-bg/50 border-brown-muted/20'
+    ]"
+  >
+    <!-- Chat messages -->
+    <div class="messages-container">
+      <div 
+        v-for="message in messages"
+        :key="message.id"
+        :class="[
+          'message p-3 rounded-lg mb-2',
+          message.isUser 
+            ? (isDark ? 'bg-dark-accent text-white ml-auto' : 'bg-blue-gray-dark text-white ml-auto')
+            : (isDark ? 'bg-dark-card text-dark-text' : 'bg-beige-warm text-gray-900')
+        ]"
+      >
+        {{ message.text }}
       </div>
+    </div>
 
-      <form @submit.prevent="handleSubmit" class="flex gap-2">
-        <input
-          v-model="input"
-          type="text"
-          placeholder="Ask a question..."
-          class="input-field flex-1"
-        />
-        <button
-          type="submit"
-          :disabled="!input.trim()"
-          class="btn-primary"
-        >
-          Send
-        </button>
-      </form>
+    <!-- Input area -->
+    <div 
+      :class="[
+        'input-area border-t p-4',
+        isDark ? 'border-dark-border' : 'border-brown-muted/20'
+      ]"
+    >
+      <input
+        :class="[
+          'w-full px-4 py-2 rounded-lg border transition-colors',
+          isDark 
+            ? 'bg-dark-surface border-dark-border text-dark-text placeholder-dark-text-muted' 
+            : 'bg-white border-brown-muted/30 text-gray-900 placeholder-blue-gray-light'
+        ]"
+        placeholder="Type your message..."
+      />
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'ChatInterface',
-  props: {
-    messages: {
-      type: Array,
-      required: true
-    }
-  },
-  emits: ['send-message'],
-  data() {
-    return {
-      input: ''
-    }
-  },
-  methods: {
-    handleSubmit() {
-      if (!this.input.trim()) return;
-      
-      this.$emit('send-message', this.input);
-      this.input = '';
-    }
-  },
-  watch: {
-    messages: {
-      handler() {
-        this.$nextTick(() => {
-          const container = this.$refs.chatContainer;
-          container.scrollTop = container.scrollHeight;
-        });
-      },
-      deep: true
-    }
+<script setup>
+import { ref, watch, nextTick } from 'vue'
+import { useTheme } from '../shared/composables/useTheme.js'
+
+const props = defineProps({
+  messages: {
+    type: Array,
+    required: true
   }
+})
+
+const emit = defineEmits(['send-message'])
+const { isDark } = useTheme()
+const input = ref('')
+const chatContainer = ref(null)
+const handleSubmit = () => {
+  if (!input.value.trim()) return;
+  
+  emit('send-message', input.value);
+  input.value = '';
 }
-</script> 
+
+watch(
+  () => props.messages,
+  () => {
+    nextTick(() => {
+      if (chatContainer.value) {
+        chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+      }
+    });
+  },
+  { deep: true }
+)
+</script>

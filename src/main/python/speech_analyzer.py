@@ -9,9 +9,11 @@ import ssl
 import urllib.request
 
 # transcription
-def transcribe(audio_path):
-    original_context = ssl._create_default_https_context
+def transcribe(audio_path, pre_text=None, pre_duration=None):
+    if pre_text is not None and pre_duration is not None:
+        return pre_text, pre_duration
     
+    original_context = ssl._create_default_https_context
     ssl._create_default_https_context = ssl._create_unverified_context
     
     try:

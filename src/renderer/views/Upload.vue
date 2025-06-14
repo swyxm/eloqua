@@ -7,7 +7,7 @@
       </header>
 
       <div class="bg-ui-card-bg backdrop-blur-md rounded-xl shadow-xl p-8 border border-blue-gray-light transform transition-all duration-300 hover:scale-[1.01]">
-        <h2 class="text-3xl font-bold text-blue-gray-dark mb-6">Analyze Speech</h2>
+        <h2 class="text-2xl text-center font-bold text-blue-gray-dark mb-6">Upload Speech</h2>
         <div class="space-y-6">
           <FileUpload
             @file-selected="handleFileSelected"
@@ -159,10 +159,10 @@
                 <button
                   v-for="place in roundPlacements" 
                   :key="place.value"
-                  @click="result = place.value"
+                  @click="rank = place.value"
                   :class="{
-                    'bg-blue-gray-dark text-creme-light': result === place.value,
-                    'bg-white/60 text-blue-gray-dark hover:bg-blue-gray-light/10': result !== place.value
+                    'bg-blue-gray-dark text-creme-light': rank === place.value,
+                    'bg-white/60 text-blue-gray-dark hover:bg-blue-gray-light/10': rank !== place.value
                   }"
                   class="px-4 py-2 border border-blue-gray-light rounded-lg transition-all duration-200 text-center font-medium flex items-center justify-center space-x-1"
                 >
@@ -198,47 +198,14 @@
           </button>
         </div>
       </div>
-
-      <!-- Analysis Results Panel (Below Form) -->
-      <div class="bg-ui-card-bg backdrop-blur-md rounded-xl shadow-xl p-8 border border-blue-gray-light transform transition-all duration-300 hover:scale-[1.01]">
-        <h2 class="text-3xl font-bold text-blue-gray-dark mb-6">Analysis Results</h2>
-        
-        <div v-if="isLoading" class="flex flex-col items-center justify-center space-y-4 py-20 text-blue-gray-dark/70">
-          <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-gray-dark"></div>
-          <p class="text-xl">Analyzing your speech, please wait...</p>
-        </div>
-
-        <template v-else-if="analysis">
-          <AnalysisPanel :analysis="analysis" class="mb-8" />
-        </template>
-
-        <div v-else class="text-center py-20 text-blue-gray-dark/70">
-          <svg class="w-24 h-24 mx-auto mb-6 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-          </svg>
-          <p class="text-xl font-medium">Select an audio file and enter the debate motion to begin analysis.</p>
-          <p class="text-md mt-2">Get AI-powered insights into your speaking style, prosody, and content.</p>
-        </div>
-      </div>
-
-      <!-- Chat Interface (Full Width at Bottom) -->
-      <div v-if="analysis" class="bg-ui-card-bg backdrop-blur-md rounded-xl shadow-xl p-8 border border-blue-gray-light transform transition-all duration-300 hover:scale-[1.01] min-h-[400px] flex flex-col">
-        <h2 class="text-3xl font-bold text-blue-gray-dark mb-6">Debate Coach Chat</h2>
-        <ChatInterface
-          :messages="chatMessages"
-          @send-message="handleChatMessage"
-          class="flex-grow"
-        />
-      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { ref, computed, watch, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import FileUpload from '../components/FileUpload.vue';
-import AnalysisPanel from '../components/AnalysisPanel.vue';
-import ChatInterface from '../components/ChatInterface.vue';
 import { ChevronsUp, ChevronUp, ChevronDown, ChevronsDown } from 'lucide-vue-next';
 import { createClient } from '@supabase/supabase-js';
 
@@ -252,25 +219,23 @@ export default {
   name: 'Home',
   components: {
     FileUpload,
-    AnalysisPanel,
-    ChatInterface,
     ChevronsUp,
     ChevronUp,
     ChevronDown,
     ChevronsDown
   },
   setup() {
+    const router = useRouter();
+    
     const selectedFile = ref(null);
     const motion = ref('');
     const format = ref(''); 
     const position = ref('');
     const roundType = ref(''); 
     const tournamentName = ref('');
-    const result = ref('');
+    const rank = ref('');
     const specificFeedback = ref('');
-    const analysis = ref(null);
     const isLoading = ref(false);
-    const chatMessages = ref([]);
     const roundNumber = ref('');
     const tournamentSuggestions = ref([]);
     const recentPositions = ref([]);
@@ -331,8 +296,8 @@ export default {
       if (position.value && !debatePositions.value.includes(position.value)) {
         position.value = '';
       }
-      if (result.value && !roundPlacements.value.map(p => p.value).includes(result.value)) {
-        result.value = '';
+      if (rank.value && !roundPlacements.value.map(p => p.value).includes(rank.value)) {
+        rank.value = '';
       }
     });
 
@@ -412,7 +377,7 @@ export default {
           debate_format: format.value,
           position: position.value,
           motion: motion.value,
-          result: result.value,
+          rank: rank.value,
           audio_path: selectedFile.value,
           analysis_result: analysisResult
         });
@@ -441,39 +406,22 @@ export default {
     };
 
     const handleFileSelected = async (file) => {
-
-
       console.log('File object received:', file);
       console.log('File properties:', Object.keys(file));
       console.log('File path:', file.path);
       console.log('File name:', file.name);
-      
-      // todo: streamline
+
       const filePath = file.path || file.webkitRelativePath || file.name;
-      console.log('Resolved file path:', filePath);
-      
       selectedFile.value = filePath;
-      console.log('selectedFile.value after setting:', selectedFile.value);
-      // bg analysis
+      
+      // Background transcription
       isAnalyzing.value = true;
       try {
-        backgroundAnalysis.value = await window.electron.ipcRenderer.invoke('analyze-speech', {
-          audioPath: file.path,
-          motion: motion.value,
-          format: format.value,
-          position: position.value,
-          roundType: roundType.value,
-          tournamentName: tournamentName.value,
-          result: result.value,
-          specificFeedback: specificFeedback.value
+        backgroundAnalysis.value = await window.electron.ipcRenderer.invoke('transcribe', {
+          audioPath: file.path
         });
       } catch (error) {
-        console.error('Background analysis error:', error);
-        chatMessages.value.push({
-          role: 'error',
-          content: `Error analyzing speech: ${error.message}`,
-          timestamp: new Date()
-        });
+        console.error('Background transcription error:', error);
       } finally {
         isAnalyzing.value = false;
       }
@@ -491,9 +439,20 @@ export default {
       isLoading.value = true;
       try {
         let result;
-        if (backgroundAnalysis.value) {
-          result = backgroundAnalysis.value;
-          backgroundAnalysis.value = null;
+        // check for pre-existing transcript
+        if (backgroundAnalysis.value && backgroundAnalysis.value.transcript) {
+          result = await window.electron.ipcRenderer.invoke('analyze-speech-with-transcript', {
+            audioPath: selectedFile.value,
+            motion: motion.value,
+            format: format.value,
+            position: position.value,
+            roundType: roundType.value,
+            tournamentName: tournamentName.value,
+            rank: rank.value,
+            specificFeedback: specificFeedback.value,
+            preTranscript: backgroundAnalysis.value.transcript,
+            preDuration: backgroundAnalysis.value.duration_seconds
+          });
         } else {
           result = await window.electron.ipcRenderer.invoke('analyze-speech', {
             audioPath: selectedFile.value,
@@ -502,50 +461,35 @@ export default {
             position: position.value,
             roundType: roundType.value,
             tournamentName: tournamentName.value,
-            result: result.value,
+            rank: rank.value,
             specificFeedback: specificFeedback.value
           });
         }
         
-        analysis.value = result;
         await saveSpeechData(result);
-        chatMessages.value = [];
+        
+        // navigate to analysis page
+        router.push({
+          name: 'CoachInterface',
+          params: {
+            analysisData: JSON.stringify(result),
+            sessionData: JSON.stringify({
+              motion: motion.value,
+              format: format.value,
+              position: position.value,
+              roundType: roundType.value,
+              tournamentName: tournamentName.value,
+              rank: rank.value,
+              specificFeedback: specificFeedback.value
+            })
+          }
+        });
+        
       } catch (error) {
         console.error('Analysis error:', error);
-        chatMessages.value.push({
-          role: 'error',
-          content: `Error analyzing speech: ${error.message}`,
-          timestamp: new Date()
-        });
+        // Handle error appropriately
       } finally {
         isLoading.value = false;
-      }
-    };
-
-    const handleChatMessage = async (message) => {
-      const newMessage = {
-        role: 'user',
-        content: message,
-        timestamp: new Date()
-      };
-      chatMessages.value.push(newMessage);
-      try {
-        const response = await window.electron.ipcRenderer.invoke('chat', {
-          analysis: analysis.value,
-          message
-        });
-        chatMessages.value.push({
-          role: 'assistant',
-          content: response,
-          timestamp: new Date()
-        });
-      } catch (error) {
-        console.error('Chat error:', error);
-        chatMessages.value.push({
-          role: 'error',
-          content: 'Failed to get response',
-          timestamp: new Date()
-        });
       }
     };
 
@@ -556,16 +500,13 @@ export default {
       position,
       roundType,
       tournamentName,
-      result,
+      rank,
       specificFeedback,
-      analysis,
       isLoading,
-      chatMessages,
       debatePositions,
       roundPlacements,
       canAnalyze,
       handleAnalyze,
-      handleChatMessage,
       roundNumber,
       tournamentSuggestions,
       recentPositions,
@@ -579,4 +520,4 @@ export default {
     };
   }
 };
-</script> 
+</script>

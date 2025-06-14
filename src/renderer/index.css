@@ -1,3 +1,39 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities; 
+
+* {
+    transition-property: background-color, border-color, color;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  /* Ensure smooth scrolling and proper backdrop blur support */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+  
+  /* Custom scrollbar for dark mode */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full;
+  }
+  
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-dark-border hover:bg-dark-text-muted;
+  }
+  
+  :not(.dark) ::-webkit-scrollbar-thumb {
+    @apply bg-brown-muted/50 hover:bg-brown-muted;
+  }

@@ -23,7 +23,8 @@ class SpeechAnalyzer {
         pythonArgs.push(specificFeedback);
       }
 
-      const pythonProcess = spawn('python', pythonArgs);
+      // Use python3 instead of python
+      const pythonProcess = spawn('python3', pythonArgs);
 
       let output = '';
       let error = '';

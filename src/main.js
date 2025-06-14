@@ -1,5 +1,15 @@
-import './renderer/index.css';
-import { createApp } from 'vue';
-import Home from './renderer/views/Home.vue';
+import { createApp } from 'vue'
+import App from './App.vue'
+import router from './router.js'
+import './index.css'
 
-createApp(Home).mount('#app'); 
+const app = createApp(App)
+app.use(router)
+
+//initialize theme
+app.mount('#app').$nextTick(() => {
+  import('./shared/composables/useTheme.js').then(({ useTheme }) => {
+    const { initTheme } = useTheme()
+    initTheme()
+  })
+})
