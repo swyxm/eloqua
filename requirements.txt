@@ -1,0 +1,49 @@
+# SYSTEM REQUIREMENTS (install separately):
+# - ffmpeg: brew install ffmpeg (macOS) or sudo apt install ffmpeg (Ubuntu)
+#
+# install w/: pip install -r requirements.txt
+#
+
+# speech process
+openai>=1.0.0
+openai-whisper>=20230314
+torch>=2.0.0
+torchaudio>=2.0.0
+opensmile-python>=2.4.1
+spacy>=3.0.0 
+
+# audio processing
+librosa>=0.10.0
+soundfile>=0.12.1
+pydub>=0.25.1
+
+# data analysis
+numpy>=1.24.0
+pandas>=2.0.0
+scipy>=1.10.0
+
+# nlp
+nltk>=3.8
+spacy>=3.5.0
+transformers>=4.20.0
+
+# sentiment analysis
+textstat>=0.7.3
+vaderSentiment>=3.3.2
+
+# ml
+scikit-learn>=1.2.0
+
+# reqs & api calls
+requests>=2.28.0
+urllib3>=1.26.0
+
+# ssl & security stuff (for mac users)
+certifi>=2022.12.7
+cryptography>=40.0.0
+
+
+# config
+python-dotenv>=1.0.0
+pyyaml>=6.0
+

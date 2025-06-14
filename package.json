@@ -1,15 +1,13 @@
 {
-  "name": "eloqua",
-  "productName": "eloqua",
+  "name": "debate-coach",
   "version": "1.0.0",
-  "description": "My Electron application description",
-  "main": "src/index.js",
+  "description": "AI-powered debate coaching application",
+  "main": "main.js",
   "scripts": {
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish",
-    "lint": "echo \"No linting configured\""
+    "start": "electron .",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "keywords": [],
   "author": {
@@ -18,17 +16,17 @@
   },
   "license": "MIT",
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.1"
+    "@supabase/supabase-js": "^2.50.0",
+    "electron-is-dev": "^2.0.0",
+    "lucide-vue-next": "^0.515.0",
+    "vue": "^3.3.4"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^7.8.1",
-    "@electron-forge/maker-deb": "^7.8.1",
-    "@electron-forge/maker-rpm": "^7.8.1",
-    "@electron-forge/maker-squirrel": "^7.8.1",
-    "@electron-forge/maker-zip": "^7.8.1",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.8.1",
-    "@electron-forge/plugin-fuses": "^7.8.1",
-    "@electron/fuses": "^1.8.0",
-    "electron": "36.3.1"
+    "@vitejs/plugin-vue": "^4.6.2",
+    "autoprefixer": "^10.4.16",
+    "electron": "^28.0.0",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "vite": "^4.4.9"
   }
 }
