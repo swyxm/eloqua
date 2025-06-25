@@ -17,15 +17,15 @@
             Upload
           </router-link>
           <router-link 
-            to="/coach" 
+            to="/dashboard" 
             :class="[
               'text-sm font-medium transition-colors px-3 py-2 rounded-md',
-              $route.path === '/coach' 
+              $route.path === '/dashboard' 
                 ? 'bg-accent text-white' 
                 : 'text-secondary hover:bg-surface-hover'
             ]"
           >
-            Coach
+            Dashboard
           </router-link>
         </nav>
       </template>

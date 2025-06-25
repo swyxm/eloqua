@@ -53,6 +53,17 @@
             </div>
 
             <div>
+              <label class="form-label">Date <span class="text-red-500">*</span></label>
+              <input
+                v-model="speechDate"
+                type="date"
+                required
+                class="form-input"
+                :max="new Date().toISOString().split('T')[0]"
+              />
+            </div>
+
+            <div>
               <div class="bg-surface-hover rounded-xl p-4">
                 <label class="form-label mb-3">Round Type <span class="text-red-500">*</span></label>
                 <div class="flex flex-col space-y-4">
@@ -193,6 +204,7 @@ const recentPositions = ref([]);
 const recentMotions = ref([]);
 const showTournamentSuggestions = ref(false);
 const showMotionSuggestions = ref(false);
+const speechDate = ref(new Date().toISOString().split('T')[0]);
 
 const debatePositions = computed(() => {
   if (format.value === 'BP') {
@@ -258,7 +270,8 @@ const canAnalyze = computed(() => {
     motion.value.trim() !== '' &&
     format.value.trim() !== '' &&
     position.value.trim() !== '' &&
-    roundType.value.trim() !== '';
+    roundType.value.trim() !== '' &&
+    speechDate.value.trim() !== '';
 
   if (roundType.value === 'tournament') {
     return baseRequirements && tournamentName.value.trim() !== '' && roundNumber.value.trim() !== '';
@@ -346,6 +359,7 @@ const handleAnalyze = async () => {
       motion: motion.value,
       audio_path: selectedFile.value.name, 
       analysis_result: analysisResult,
+      speech_date: speechDate.value,
     };
 
     if (rank.value) {
@@ -366,7 +380,7 @@ const handleAnalyze = async () => {
     store.analysisData = analysisResult;
     store.sessionData = sessionData;
 
-    router.push({ name: 'CoachInterface' });
+    router.push({ name: 'Dashboard' });
 
   } catch (error) {
     console.error('Analysis or save error:', error);

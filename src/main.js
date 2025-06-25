@@ -9,11 +9,11 @@ import './index.css';
 initializeTheme();
 
 import Upload from './renderer/views/Upload.vue';
-import CoachInterface from './renderer/views/CoachInterface.vue';
+import Dashboard from './renderer/views/Dashboard.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Upload },
-  { path: '/coach', name: 'CoachInterface', component: CoachInterface }
+  { path: '/dashboard', name: 'Dashboard', component: Dashboard }
 ]
 
 const router = createRouter({
