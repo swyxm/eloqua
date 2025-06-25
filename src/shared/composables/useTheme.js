@@ -1,51 +1,49 @@
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch } from 'vue';
 
-const isDarkMode = ref(false)
-const initializeTheme = () => {
-  if (typeof window !== 'undefined') {
-    const savedTheme = localStorage.getItem('eloqua-theme')
-    if (savedTheme) {
-      isDarkMode.value = savedTheme === 'dark'
-    } else {
-      isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches
-    }
-        updateDocumentTheme()
-  }
-}
+// This singleton ref holds the current theme state.
+const isDark = ref(false);
 
-const updateDocumentTheme = () => {
-  if (typeof window !== 'undefined') {
-    if (isDarkMode.value) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('eloqua-theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('eloqua-theme', 'light')
-    }
-  }
-}
+/**
+ * Initializes the theme based on localStorage or system preference.
+ * This function has a side effect: it adds/removes the 'dark' class from the root element.
+ * It MUST be called once, at application startup, before the Vue app is mounted.
+ */
+export const initializeTheme = () => {
+  if (typeof window === 'undefined') return;
 
-watch(isDarkMode, updateDocumentTheme)
+  const savedTheme = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  
+  isDark.value = savedTheme ? savedTheme === 'dark' : prefersDark;
+  
+  document.documentElement.classList.toggle('dark', isDark.value);
+};
 
+/**
+ * A Vue composable that provides reactive theme state and methods to change it.
+ */
 export function useTheme() {
-  if (typeof window !== 'undefined' && !document.documentElement.classList.contains('dark') && isDarkMode.value) {
-    initializeTheme()
-  }
+  // When the theme is changed programmatically (e.g., by the toggle button),
+  // update the DOM class and localStorage.
+  watch(isDark, (newVal) => {
+    if (typeof window !== 'undefined') {
+      document.documentElement.classList.toggle('dark', newVal);
+      localStorage.setItem('theme', newVal ? 'dark' : 'light');
+    }
+  });
+
   const toggleTheme = () => {
-    isDarkMode.value = !isDarkMode.value
-  }
+    isDark.value = !isDark.value;
+  };
+
   const setTheme = (theme) => {
-    isDarkMode.value = theme === 'dark'
-  }
-  const theme = computed(() => isDarkMode.value ? 'dark' : 'light')
+    isDark.value = theme === 'dark';
+  };
 
   return {
-    isDark: computed(() => isDarkMode.value),
-    theme,
+    isDark: computed(() => isDark.value),
+    theme: computed(() => (isDark.value ? 'dark' : 'light')),
     toggleTheme,
-    setTheme
-  }
-}
-if (typeof window !== 'undefined') {
-  initializeTheme()
+    setTheme,
+  };
 }

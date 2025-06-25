@@ -1,94 +1,114 @@
 <template>
-  <div 
-    :class="[
-      'chat-interface rounded-xl backdrop-blur-sm transition-all duration-300',
-      'border',
-      isDark 
-        ? 'bg-dark-surface/50 border-dark-border' 
-        : 'bg-ui-card-bg/50 border-brown-muted/20'
-    ]"
-  >
+  <div class="chat-interface rounded-xl border border-default bg-card/50 backdrop-blur-sm transition-all duration-200 flex flex-col h-full">
+    <!-- Messages Container -->
     <div 
       ref="chatContainer"
-      :class="[
-        'messages-container p-4 h-96 overflow-y-auto',
-        isDark ? 'scrollbar-dark' : 'scrollbar-light'
-      ]"
+      class="messages-container flex-1 p-4 overflow-y-auto"
     >
       <div 
         v-for="message in messages"
         :key="message.id"
         :class="[
-          'message p-3 rounded-lg mb-2 max-w-xs',
+          'message p-3 rounded-lg mb-3 max-w-[80%]',
+          'transition-all duration-200',
           message.isUser 
-            ? [
-                'ml-auto',
-                isDark ? 'bg-dark-accent text-white' : 'bg-blue-gray-dark text-white'
-              ]
-            : [
-                'mr-auto', 
-                isDark ? 'bg-dark-card text-dark-text' : 'bg-beige-warm text-gray-900'
-              ]
+            ? 'ml-auto bg-accent text-white rounded-tr-none'
+            : 'mr-auto bg-surface text-primary rounded-tl-none'
         ]"
       >
-        {{ message.text }}
+        <div class="whitespace-pre-wrap break-words">{{ message.text }}</div>
+        <div 
+          v-if="message.timestamp" 
+          :class="[
+            'text-xs mt-1 text-right',
+            message.isUser ? 'text-white/70' : 'text-secondary'
+          ]"
+        >
+          {{ formatTime(message.timestamp) }}
+        </div>
+      </div>
+      
+      <!-- Typing indicator -->
+      <div 
+        v-if="isTyping"
+        class="typing-indicator flex items-center space-x-1 p-3 bg-surface rounded-lg w-24 mb-3"
+      >
+        <div class="w-2 h-2 bg-secondary rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+        <div class="w-2 h-2 bg-secondary rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+        <div class="w-2 h-2 bg-secondary rounded-full animate-bounce" style="animation-delay: 300ms"></div>
       </div>
     </div>
 
-    <!-- input section -->
-    <div 
-      :class="[
-        'input-area border-t p-4 flex gap-2',
-        isDark ? 'border-dark-border' : 'border-brown-muted/20'
-      ]"
-    >
-      <input
-        v-model="input"
-        @keyup.enter="handleSubmit"
-        :class="[
-          'flex-1 px-4 py-2 rounded-lg border transition-colors',
-          isDark 
-            ? 'bg-dark-surface border-dark-border text-dark-text placeholder-dark-text-muted' 
-            : 'bg-white border-brown-muted/30 text-gray-900 placeholder-blue-gray-light'
-        ]"
-        placeholder="Type your message..."
-      />
-      <button
-        @click="handleSubmit"
-        :class="[
-          'px-4 py-2 rounded-lg font-medium transition-colors',
-          isDark
-            ? 'bg-dark-accent hover:bg-dark-accent/80 text-white'
-            : 'bg-blue-gray-dark hover:bg-blue-gray-dark/80 text-white'
-        ]"
-      >
-        Send
-      </button>
+    <!-- Input Section -->
+    <div class="input-area border-t border-default p-4 bg-card/50 backdrop-blur-sm">
+      <div class="flex gap-2">
+        <input
+          v-model="input"
+          @input="handleInput"
+          @keyup.enter="handleSubmit"
+          :disabled="isLoading"
+          placeholder="Type your message..."
+          class="form-input flex-1"
+        />
+        <button
+          @click="handleSubmit"
+          :disabled="!input.trim() || isLoading"
+          class="button-primary"
+        >
+          <span v-if="!isLoading">Send</span>
+          <span v-else class="flex items-center">
+            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Sending...
+          </span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
-import { useTheme } from '../../shared/composables/useTheme.js';
-
+import { ref, onMounted, nextTick, watch } from 'vue';
 const props = defineProps({
   messages: {
     type: Array,
-    required: true
+    required: true,
+    default: () => []
+  },
+  isLoading: {
+    type: Boolean,
+    default: false
+  },
+  isTyping: {
+    type: Boolean,
+    default: false
   }
-})
+});
 
-const emit = defineEmits(['send-message'])
-const { isDark } = useTheme()
-const input = ref('')
-const chatContainer = ref(null)
+const emit = defineEmits(['send-message']);
+
+const input = ref('');
+const chatContainer = ref(null);
 
 const handleSubmit = () => {
   if (!input.value.trim()) return;
   emit('send-message', input.value);
   input.value = '';
-}
+};
+
+const handleInput = () => {
+  // Optional: Handle input changes (e.g., for typing indicators)
+};
+
+const formatTime = (timestamp) => {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+// Auto-scroll to bottom when messages change
 watch(
   () => props.messages,
   () => {
@@ -98,6 +118,6 @@ watch(
       }
     });
   },
-  { deep: true }
-)
+  { deep: true, immediate: true }
+);
 </script>

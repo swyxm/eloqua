@@ -10,7 +10,7 @@ const routes = [
     component: Home
   },
   {
-    path: '/coach/:analysisData/:sessionData',
+    path: '/coach',
     name: 'CoachInterface',
     component: CoachInterface,
     props: true

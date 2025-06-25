@@ -1,23 +1,21 @@
+@import "./styles/theme.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --creme-light: #fdfbf7;
-    --blue-gray-dark: #334155;
-    --blue-gray-light: #cbd5e1;
-    --ui-card-bg: rgba(255, 255, 255, 0.8);
-    --dark-bg: #0f172a;
-    --dark-border: #334155;
-    --dark-text-muted: #64748b;
-  }
+
+
+/* Global transition styles */
+* {
+  transition-property: background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-duration: 1ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
-  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-duration: 300ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-property: color;
+  transition-duration: 0s;
 }
 
 html {
@@ -25,9 +23,11 @@ html {
 }
 
 body {
+  @apply bg-bg text-primary;
   font-feature-settings: 'rlig' 1, 'calt' 1;
 }
 
+/* Theme-aware scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -37,51 +37,28 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 hover:bg-gray-400 rounded-full;
+  @apply bg-border rounded-full;
 }
 
-/* Dark mode scrollbar */
-.dark ::-webkit-scrollbar-thumb {
-  @apply bg-gray-600 hover:bg-gray-500;
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-surface-hover;
 }
 
-/* Custom utility classes */
-@layer utilities {
-  .bg-creme-light {
-    background-color: var(--creme-light);
-  }
-  
-  .text-blue-gray-dark {
-    color: var(--blue-gray-dark);
-  }
-  
-  .border-blue-gray-light {
-    border-color: var(--blue-gray-light);
-  }
-  
-  .bg-ui-card-bg {
-    background-color: var(--ui-card-bg);
-  }
-  
-  .bg-dark-border {
-    background-color: var(--dark-border);
-  }
-  
-  .text-dark-text-muted {
-    color: var(--dark-text-muted);
-  }
-}
-
+/* Reusable component classes */
 @layer components {
-  .btn-primary {
-    @apply px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200;
+  .form-label {
+    @apply block text-secondary text-sm font-medium mb-1;
   }
-  
+
+  .form-input {
+    @apply w-full px-4 py-2 border border-input-border rounded-md bg-input-bg text-primary focus:ring-2 focus:ring-accent/40 focus:border-accent transition placeholder-secondary/60;
+  }
+
+  .button-primary {
+    @apply bg-accent hover:bg-accent-hover text-accent-text font-bold py-2 px-4 rounded-md shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
   .card {
-    @apply bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-gray-200;
-  }
-  
-  .dark .card {
-    @apply bg-gray-800/80 border-gray-600;
+    @apply bg-card border border-border rounded-lg p-6 shadow-sm;
   }
 }

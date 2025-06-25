@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  darkMode: 'class', // Enable class strategy for dark mode toggling via the `dark` class on <html>
   content: [
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}"
@@ -7,12 +8,26 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'creme-light': '#eae6e2', // Soft off-white, ideal for background
-        'ui-card-bg': '#fbfbfb', // A very light, warm off-white for card backgrounds
-        'blue-gray-light': '#73828e', // Muted blue-gray
-        'beige-warm': '#e8d7c4', // Light, warm beige
-        'brown-muted': '#a99985', // Muted, warm brown
-        'blue-gray-dark': '#475e72', // Deeper, darker blue-gray
+        /* Surface Colors */
+        bg: 'rgb(var(--bg) / <alpha-value>)',
+        surface: 'rgb(var(--surface) / <alpha-value>)',
+        'surface-hover': 'rgb(var(--surface-hover) / <alpha-value>)',
+        card: 'rgb(var(--card) / <alpha-value>)',
+        border: 'rgb(var(--border) / <alpha-value>)',
+
+        /* Text Colors */
+        primary: 'rgb(var(--text-primary) / <alpha-value>)',
+        secondary: 'rgb(var(--text-secondary) / <alpha-value>)',
+        'accent-text': 'rgb(var(--accent-text) / <alpha-value>)',
+
+        /* Accent Colors */
+        accent: 'rgb(var(--accent) / <alpha-value>)',
+        'accent-hover': 'rgb(var(--accent-hover) / <alpha-value>)',
+
+        /* Input Control Colors */
+        'input-bg': 'rgb(var(--input-bg) / <alpha-value>)',
+        'input-border': 'rgb(var(--input-border) / <alpha-value>)',
+        'input-border-hover': 'rgb(var(--input-border-hover) / <alpha-value>)',
       },
       backdropBlur: {
         xs: '2px',

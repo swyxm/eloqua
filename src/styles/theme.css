@@ -1,0 +1,60 @@
+/* src/styles/theme.css */
+
+/* 
+  ==========================================================================
+  THEME DEFINITIONS
+  ==========================================================================
+  This file contains the core color definitions for the entire application.
+  - Light mode variables are defined in :root.
+  - Dark mode variables are defined in .dark.
+  - All variables are in RGB format to be compatible with Tailwind's opacity modifiers.
+  - Ensure every variable has a 1-to-1 mapping between light and dark modes.
+*/
+
+:root {
+  /* Surface Colors */
+  --bg: 255 255 255; /* White */
+  --surface: 34, 255, 0; /* Slate-50 */
+  --surface-hover: 241 245 249; /* Slate-100 */
+  --card: 255 255 255; /* White */
+  --border: 226 232 240; /* Slate-200 */
+
+  /* Text Colors */
+  --text-primary: 30 41 59; /* Slate-800 */
+  --text-secondary: 71 85 105; /* Slate-600 */
+  --text-accent: 37 99 235; /* Blue-600 */
+
+  /* Accent Colors */
+  --accent: 37 99 235; /* Blue-600 */
+  --accent-hover: 29 78 216; /* Blue-700 */
+  --accent-text: 255 255 255; /* White */
+
+  /* Input Control Colors */
+  --input-bg: 255 255 255; /* White */
+  --input-border: 203 213 225; /* Slate-300 */
+  --input-border-hover: 148 163 184; /* Slate-400 */
+}
+
+.dark {
+  /* Surface Colors */
+  --bg: 15 23 42; /* Slate-900 */
+  --surface: 30 41 59; /* Slate-800 */
+  --surface-hover: 51 65 85; /* Slate-700 */
+  --card: 30 41 59; /* Slate-800 */
+  --border: 51 65 85; /* Slate-700 */
+
+  /* Text Colors */
+  --text-primary: 226 232 240; /* Slate-200 */
+  --text-secondary: 148 163 184; /* Slate-400 */
+  --text-accent: 96 165 250; /* Blue-400 */
+
+  /* Accent Colors */
+  --accent: 59 130 246; /* Blue-500 */
+  --accent-hover: 96 165 250; /* Blue-400 */
+  --accent-text: 255 255 255; /* White */
+
+  /* Input Control Colors */
+  --input-bg: 30 41 59; /* Slate-800 */
+  --input-border: 71 85 105; /* Slate-600 */
+  --input-border-hover: 100 116 139; /* Slate-500 */
+}

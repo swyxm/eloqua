@@ -1,104 +1,65 @@
 <template>
-  <div 
-    :class="[
-      'min-h-screen p-8 font-sans overflow-auto',
-      isDark ? 'bg-gray-900' : 'bg-creme-light'
-    ]"
-  >
+  <div class="min-h-screen p-8 font-sans overflow-auto bg-bg text-primary">
     <div class="max-w-7xl mx-auto space-y-8">
       <header class="text-center mb-8">
-        <h1 :class="[
-          'text-5xl font-extrabold mb-2 tracking-tight',
-          isDark ? 'text-white' : 'text-blue-gray-dark'
-        ]">
+        <h1 class="text-5xl font-extrabold mb-2 tracking-tight text-primary">
           Eloqua
         </h1>
-        <p :class="[
-          'text-lg',
-          isDark ? 'text-gray-300' : 'text-blue-gray-dark/80'
-        ]">
+        <p class="text-lg text-muted">
           Your AI Debate Coach
         </p>
         <button 
           @click="goBack"
-          :class="[
-            'mt-4 px-6 py-2 rounded-lg transition-colors duration-200',
-            isDark 
-              ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' 
-              : 'bg-blue-gray-dark/10 text-blue-gray-dark hover:bg-blue-gray-dark/20'
-          ]"
+          class="mt-4 px-6 py-2 rounded-lg transition-colors duration-200 bg-surface text-primary hover:bg-surface-hover"
         >
           ← Back to Form
         </button>
       </header>
 
       <!-- Session Info Summary -->
-      <div :class="[
-        'backdrop-blur-md rounded-xl shadow-lg p-6 border',
-        isDark 
-          ? 'bg-gray-800/80 border-gray-600' 
-          : 'bg-ui-card-bg border-blue-gray-light'
-      ]">
-        <h3 :class="[
-          'text-xl font-semibold mb-4',
-          isDark ? 'text-white' : 'text-blue-gray-dark'
-        ]">
+      <div class="backdrop-blur-md rounded-xl shadow-lg p-6 border bg-card border-default">
+        <h3 class="text-xl font-semibold mb-4 text-primary">
           Session Information
         </h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>
-            <span :class="[
-              'font-medium',
-              isDark ? 'text-gray-300' : 'text-blue-gray-dark/80'
-            ]">
+            <span class="font-medium text-muted">
               Motion:
             </span>
-            <p :class="isDark ? 'text-gray-200' : 'text-blue-gray-dark'">
+            <p class="text-primary">
               {{ sessionInfo.motion }}
             </p>
           </div>
           <div>
-            <span :class="[
-              'font-medium',
-              isDark ? 'text-gray-300' : 'text-blue-gray-dark/80'
-            ]">
+            <span class="font-medium text-muted">
               Format:
             </span>
-            <p :class="isDark ? 'text-gray-200' : 'text-blue-gray-dark'">
+            <p class="text-primary">
               {{ sessionInfo.format }}
             </p>
           </div>
           <div>
-            <span :class="[
-              'font-medium',
-              isDark ? 'text-gray-300' : 'text-blue-gray-dark/80'
-            ]">
+            <span class="font-medium text-muted">
               Position:
             </span>
-            <p :class="isDark ? 'text-gray-200' : 'text-blue-gray-dark'">
+            <p class="text-primary">
               {{ sessionInfo.position }}
             </p>
           </div>
           <div v-if="sessionInfo.tournamentName">
-            <span :class="[
-              'font-medium',
-              isDark ? 'text-gray-300' : 'text-blue-gray-dark/80'
-            ]">
+            <span class="font-medium text-muted">
               Tournament:
             </span>
-            <p :class="isDark ? 'text-gray-200' : 'text-blue-gray-dark'">
+            <p class="text-primary">
               {{ sessionInfo.tournamentName }}
             </p>
           </div>
-          <div v-if="sessionInfo.rank">
-            <span :class="[
-              'font-medium',
-              isDark ? 'text-gray-300' : 'text-blue-gray-dark/80'
-            ]">
+          <div v-if="sessionInfo.place_in_round">
+            <span class="font-medium text-muted">
               Result:
             </span>
-            <p :class="isDark ? 'text-gray-200' : 'text-blue-gray-dark'">
-              {{ sessionInfo.rank }}
+            <p class="text-primary">
+              {{ sessionInfo.place_in_round }}
             </p>
           </div>
         </div>
@@ -106,27 +67,13 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="analysis-section">
-          <div :class="[
-            'backdrop-blur-md rounded-xl shadow-xl p-8 border transform transition-all duration-300 hover:scale-[1.01]',
-            isDark 
-              ? 'bg-gray-800/80 border-gray-600' 
-              : 'bg-ui-card-bg border-blue-gray-light'
-          ]">
-            <h2 :class="[
-              'text-2xl text-center font-bold mb-6',
-              isDark ? 'text-white' : 'text-blue-gray-dark'
-            ]">
+          <div class="backdrop-blur-md rounded-xl shadow-xl p-8 border transform transition-all duration-300 hover:scale-[1.01] bg-card border-default">
+            <h2 class="text-2xl text-center font-bold mb-6 text-primary">
               Analysis Results
             </h2>
             
-            <div v-if="isLoading" :class="[
-              'flex flex-col items-center justify-center space-y-4 py-20',
-              isDark ? 'text-gray-400' : 'text-blue-gray-dark/70'
-            ]">
-              <div :class="[
-                'animate-spin rounded-full h-12 w-12 border-t-4 border-b-4',
-                isDark ? 'border-gray-400' : 'border-blue-gray-dark'
-              ]"></div>
+            <div v-if="isLoading" class="flex flex-col items-center justify-center space-y-4 py-20 text-muted">
+              <div class="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-accent"></div>
               <p class="text-xl">Loading analysis...</p>
             </div>
 
@@ -134,10 +81,7 @@
               <AnalysisPanel :analysis="analysisData" class="mb-8" />
             </template>
 
-            <div v-else :class="[
-              'text-center py-20',
-              isDark ? 'text-gray-400' : 'text-blue-gray-dark/70'
-            ]">
+            <div v-else class="text-center py-20 text-muted">
               <p class="text-xl font-medium">No analysis data available</p>
               <p class="text-md mt-2">Please go back and run the analysis again.</p>
             </div>
@@ -145,16 +89,8 @@
         </div>
 
         <div class="chat-section">
-          <div v-if="analysisData" :class="[
-            'backdrop-blur-md rounded-xl shadow-xl p-8 border transform transition-all duration-300 hover:scale-[1.01] min-h-[400px] flex flex-col',
-            isDark 
-              ? 'bg-gray-800/80 border-gray-600' 
-              : 'bg-ui-card-bg border-blue-gray-light'
-          ]">
-            <h2 :class="[
-              'text-2xl text-center font-bold mb-6',
-              isDark ? 'text-white' : 'text-blue-gray-dark'
-            ]">
+          <div v-if="analysisData" class="backdrop-blur-md rounded-xl shadow-xl p-8 border transform transition-all duration-300 hover:scale-[1.01] min-h-[400px] flex flex-col bg-card border-default">
+            <h2 class="text-2xl text-center font-bold mb-6 text-primary">
               Debate Coach Chat
             </h2>
             <ChatInterface
@@ -171,110 +107,46 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router';
+import { store } from '../store.js';
 import AnalysisPanel from '../components/AnalysisPanel.vue'
 import ChatInterface from '../components/ChatInterface.vue'
-import { useTheme } from '../../shared/composables/useTheme.js';
 
-const { isDark } = useTheme()
 const router = useRouter()
-const route = useRoute()
+
 
 const analysisData = ref(null)
 const sessionInfo = ref({})
 const chatMessages = ref([])
 const isLoading = ref(false)
 
-onMounted(async () => {
-  if (route.params.analysisData) {
-    try {
-      analysisData.value = JSON.parse(route.params.analysisData)
-    } catch (error) {
-      console.error('Failed to parse analysis data:', error)
-    }
-  }
+onMounted(() => {
+  analysisData.value = store.analysisData;
+  sessionInfo.value = store.sessionData;
 
-  if (route.params.sessionData) {
-    try {
-      sessionInfo.value = JSON.parse(route.params.sessionData)
-    } catch (error) {
-      console.error('Failed to parse session data:', error)
-    }
-  }
-
+  // Initial chat message if analysis data is present
   if (analysisData.value) {
-    chatMessages.value = []
-  }
-})
-
-const handleSendMessage = async (message) => {
-  const newMessage = {
-    id: Date.now(),
-    role: 'user',
-    content: message,
-    text: message, 
-    isUser: true,
-    timestamp: new Date()
-  }
-  chatMessages.value.push(newMessage)
-  
-  try {
-    if (window.electron?.ipcRenderer) {
-      const response = await window.electron.ipcRenderer.invoke('chat', {
-        analysis: analysisData.value,
-        message
-      })
-      
-      chatMessages.value.push({
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: response,
-        text: response,
-        isUser: false,
-        timestamp: new Date()
-      })
-    } else {
-      // fallback for web environment or testing
-      chatMessages.value.push({
-        id: Date.now() + 1,
-        role: 'assistant',
-        content: 'I would help you with your debate analysis, but this requires the full Eloqua application.',
-        text: 'I would help you with your debate analysis, but this requires the full Eloqua application.',
-        isUser: false,
-        timestamp: new Date()
-      })
-    }
-  } catch (error) {
-    console.error('Chat error:', error)
     chatMessages.value.push({
-      id: Date.now() + 1,
-      role: 'error',
-      content: 'Failed to get response',
-      text: 'Failed to get response',
-      isUser: false,
-      timestamp: new Date()
-    })
+      role: 'assistant',
+      content: 'Hello! I am Eloqua, your AI debate coach. How can I help you with this analysis?'
+    });
   }
-}
+});
 
 const goBack = () => {
-  router.push({ name: 'Home' })
-}
+  router.push('/');
+};
+
+const handleSendMessage = (message) => {
+  chatMessages.value.push({ role: 'user', content: message });
+  // Here you would typically send the message to a backend/AI service
+  // and then receive a response.
+  // For this example, we'll just echo a simple response.
+  setTimeout(() => {
+    chatMessages.value.push({ 
+      role: 'assistant', 
+      content: `I've received your message: "${message}". I'm still in training, but I'm learning to provide helpful feedback!`
+    });
+  }, 1000);
+};
 </script>
-
-<style scoped>
-.coach-interface-container {
-  transition: background-color 0.3s ease;
-}
-
-.analysis-section,
-.chat-section {
-  height: fit-content;
-}
-
-@media (max-width: 1024px) {
-  .grid-cols-1.lg\\:grid-cols-2 {
-    gap: 1.5rem;
-  }
-}
-</style>

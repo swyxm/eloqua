@@ -1,10 +1,15 @@
-import { createApp } from 'vue'
-import { createRouter, createWebHistory } from 'vue-router'
-import App from './renderer/components/App.vue'
-import './index.css'
+import { createApp } from 'vue';
+import { createRouter, createWebHistory } from 'vue-router';
+import App from './renderer/components/App.vue';
+import { initializeTheme } from './shared/composables/useTheme';
+import './index.css';
 
-import Upload from './renderer/views/Upload.vue'
-import CoachInterface from './renderer/views/CoachInterface.vue'
+// Initialize the theme before creating the app instance.
+// This is the single source of truth for the initial theme.
+initializeTheme();
+
+import Upload from './renderer/views/Upload.vue';
+import CoachInterface from './renderer/views/CoachInterface.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Upload },

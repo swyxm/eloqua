@@ -3,27 +3,25 @@
     :class="[
       'analysis-panel rounded-xl p-6 backdrop-blur-sm transition-all duration-300',
       'border shadow-lg',
-      isDark 
-        ? 'bg-dark-card/50 border-dark-border text-dark-text' 
-        : 'bg-ui-card-bg/50 border-brown-muted/20 text-gray-900'
+      'bg-card border-default text-primary'
     ]"
   >
     <div class="space-y-6">
-      <div class="bg-ice-blue-50 p-4 rounded-lg">
-        <h3 class="text-lg font-semibold text-ice-blue-700 mb-2">Score:</h3>
-        <p class="text-3xl font-bold text-ice-blue-600">{{ analysis.score }}</p>
+      <div class="bg-surface-hover p-4 rounded-lg">
+        <h3 class="text-lg font-semibold text-accent mb-2">Score:</h3>
+        <p class="text-3xl font-bold text-accent">{{ analysis?.score || 'N/A' }}</p>
       </div>
 
       <div>
-        <h3 class="text-lg font-semibold text-slate-800 mb-2">Speech Statistics</h3>
+        <h3 class="text-lg font-semibold text-primary mb-2">Speech Statistics</h3>
         <div class="grid grid-cols-2 gap-4">
           <div class="stat-card">
-            <span class="text-slate-600">Duration</span>
-            <span class="text-xl font-semibold">{{ analysis.duration_seconds }}s</span>
+            <span class="text-secondary">Duration: </span>
+            <span class="text-xl font-semibold">{{ analysis?.duration_seconds || 'N/A' }}s</span>
           </div>
           <div class="stat-card">
-            <span class="text-slate-600">Word Count</span>
-            <span class="text-xl font-semibold">{{ analysis.transcript_stats.word_count }}</span>
+            <span class="text-secondary">Word Count: </span>
+            <span class="text-xl font-semibold">{{ analysis?.transcript_stats?.word_count || 'N/A' }}</span>
           </div>
         </div>
       </div>
@@ -37,8 +35,6 @@
 </template>
 
 <script setup>
-import { useTheme } from '../../shared/composables/useTheme.js';
-const { isDark } = useTheme()
 const props = defineProps({
   analysis: {
     type: Object,
