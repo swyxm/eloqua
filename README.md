@@ -1,9 +1,144 @@
-# Whisper Model Configuration Guide
+# Eloqua - AI Debate Coach
 
-## Overview
-This speech analyzer runs OpenAI's Whisper models locally for transcription & analysis. This was done to save costs from API calls and offer the user modularity on their model choice. You can choose different model sizes based on how much you're willing to download. I will say, I've run all of them, default is set to Small because it hallucinated the least but even Base works just fine. Larger models may risk hallucination but have the best accuracy. If you are willing to wait for the extra processing time for a deeper understanding of your argumentation and flow, use the Large model.
+## 🎯 What is Eloqua?
 
-## Available Whisper Models
+Eloqua is an intelligent debate speech analysis **desktop application** that helps competitive debaters improve their performance through AI-powered feedback. Built with Electron, it provides a native desktop experience while transcribing your debate speeches, analyzing your argumentation, and providing detailed insights to help you become a better debater.
+
+### ✨ Key Features
+
+- **🎤 Speech Recording & Upload**: Record or upload your debate speeches in various audio formats
+- **🤖 AI-Powered Analysis**: Uses OpenAI's Whisper models for accurate transcription and analysis
+- **📊 Performance Scoring**: Get detailed scores and feedback on your debate performance
+- **📈 Progress Tracking**: Visual timeline of your debate journey with statistics and trends
+- **🔍 Advanced Search**: Search through your speeches by motion, tournament, position, or metadata
+- **🏆 Tournament Management**: Organize speeches by tournaments and track your competitive record
+- **📱 Modern Interface**: Beautiful, responsive design with light and dark modes
+
+### 🎪 Supported Debate Formats
+
+- **British Parliamentary (BP)**
+- **World Schools Debate Championship (WSDC)**
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js** (v16 or higher)
+- **npm** or **yarn**
+- **Python** (v3.8 or higher) - for speech analysis
+- **Git**
+
+### System Requirements
+
+- **RAM**: Minimum 4GB, Recommended 8GB+
+- **Storage**: At least 2GB free space for models and dependencies
+- **Audio**: Microphone for recording speeches
+- **Internet**: Required for initial setup and model downloads
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/swyxm/eloqua.git
+   cd eloqua
+   ```
+
+2. **Install Node.js dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. **Install Python dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Edit `.env` and add your Supabase credentials:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+5. **Set up your own database (To run beta version for now)**
+   - Create a Supabase project at [supabase.com](https://supabase.com)
+   - Run the SQL scripts in `database/schema.sql` to create the required tables
+
+### Running the Application
+
+1. **Start the Electron app**
+   ```bash
+   npm start
+   # or
+   yarn start
+   ```
+
+2. **The desktop application will open automatically**
+   - No browser needed - Eloqua runs as a native desktop app
+   - The app window will appear with the full interface
+
+3. **Start analyzing speeches!**
+   - Click "Record New Speech" to upload or record a debate speech
+   - Fill in the debate details (motion, format, position, etc.)
+   - Get instant AI-powered feedback and analysis
+
+## 📖 How to Use Eloqua
+
+### Recording a Speech
+
+1. **Navigate to the Upload page**
+   - Click "Record New Speech" from the Dashboard
+   - Or go to the Upload tab in the navigation
+
+2. **Add your speech**
+   - Upload an audio file or record directly in the browser
+   - Supported formats: MP3, WAV, M4A, OGG
+
+3. **Fill in debate details**
+   - **Motion**: The debate topic you're speaking on
+   - **Format**: Choose between BP or WSDC
+   - **Position**: Your role in the debate (e.g., Prime Minister, First Speaker)
+   - **Date**: When the speech was given
+   - **Tournament**: Optional tournament information
+   - **Place in Round**: Your result (First Place, Second Place, etc.)
+
+4. **Get analysis**
+   - Click "Analyze Speech" to process your audio
+   - Wait for transcription and analysis (typically 1-3 minutes)
+   - Review your detailed feedback and score
+
+### Using the Dashboard
+
+The Dashboard provides a comprehensive view of your debate journey:
+
+- **📊 Statistics**: Total speeches, victories, average score, monthly activity
+- **📅 Timeline View**: Chronological view of all your speeches
+- **🔍 Advanced Search**: Find speeches by content, metadata, or performance
+- **🎯 Filtering**: Filter by format, date range, or other criteria
+- **📈 Progress Tracking**: Visual representation of your improvement over time
+
+### Search Examples
+
+Eloqua supports powerful metadata search:
+
+- `"first place"` - Find all winning speeches
+- `">500 words"` - Find speeches with more than 500 words
+- `"prime minister"` - Find all Prime Minister speeches
+- `">8 score"` - Find high-scoring speeches
+- `"<3 minutes"` - Find short speeches
+- `"opposition"` - Find all opposition speeches
+
+## 🤖 Whisper Model Configuration
+
+Eloqua uses OpenAI's Whisper models for speech transcription and analysis. You can choose different model sizes based on your needs:
+
+### Available Whisper Models
 | Model | Size | VRAM | Speed | Accuracy | Best For |
 |-------|------|------|-------|----------|----------|
 | `tiny` | 39 MB | ~1 GB | Fastest | Lowest | Quick testing |
@@ -13,66 +148,15 @@ This speech analyzer runs OpenAI's Whisper models locally for transcription & an
 | `large` | 1550 MB | ~10 GB | Slowest | Highest | **Bulkiest** but best possible accuracy |
 | `turbo` | 809 MB | ~6 GB | Fast | High | Fastest large model = hallucinates a lot |
 
-## Changing the Model
+### Changing the Model
 In your `speech_analyzer.py`, find this line:
 ```python
 model = whisper.load_model("base")
 ```
-## Troubleshooting
 
-### Model Download Issues
-If you get SSL certificate errors:
-- I gotchu! the code includes automatic SSL handling
 - First download may take 1-5 minutes depending on model size and then you're chilling after that.
 - Models are cached after first download
 
-### Memory Issues
-If you get out-of-memory errors:
-```
-RuntimeError: [enforce fail at alloc_cpu.cpp:75] data. DefaultCPUAllocator: not enough memory
-```
+## 📄 License
 
-**Solutions:**
-1. Use a smaller model (`tiny` or `base`)
-2. Close other applications
-3. Process shorter audio files
-4. Add swap space to your system
-
-### Slow Performance
-If transcription is very slow:
-1. **Use `turbo` model** - best speed/accuracy tradeoff
-2. **Use GPU** if available
-3. **Use `tiny` or `base`** for fastest processing
-4. **Process shorter clips** (split long audio files)
-
-## Recommendations by Use Case
-
-### For Development/Testing:
-```python
-model = whisper.load_model("base")  # Fast, good enough
-```
-
-### For Production/High Accuracy:
-```python
-model = whisper.load_model("turbo")  # Best balance of speed and accuracy
-```
-
-### For Best Possible Quality:
-```python
-model = whisper.load_model("large")  # Highest accuracy, slow
-```
-
-### For Low-Resource Systems:
-```python
-model = whisper.load_model("tiny")  # Minimal resource usage
-```
-
-## Model Performance Comparison
-*Times approximate for 10-minute audio on MacBook Pro M1*
-
-- **tiny:** ~30 seconds, decent quality
-- **base:** ~1 minute, good quality  
-- **small:** ~2 minutes, better quality
-- **turbo:** ~2.5 minutes, high quality ⭐ **Recommended**
-- **medium:** ~4 minutes, very high quality
-- **large:** ~8 minutes, best quality
+This project is licensed under the MIT License.
