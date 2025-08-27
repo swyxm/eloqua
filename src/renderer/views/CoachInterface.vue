@@ -2,12 +2,17 @@
   <div class="min-h-screen p-8 font-sans overflow-auto bg-bg text-primary">
     <div class="max-w-7xl mx-auto space-y-8">
       <header class="text-center mb-8">
-        <h1 class="text-5xl font-extrabold mb-2 tracking-tight text-primary">
-          Eloqua
-        </h1>
-        <p class="text-lg text-muted">
-          Your AI Debate Coach
-        </p>
+        <div class="flex flex-col items-center space-y-4">
+          <div class="flex items-center space-x-4">
+            <EloquaLogo class="w-20 h-14" />
+            <h1 class="text-5xl font-extrabold tracking-tight text-primary">
+              Eloqua
+            </h1>
+          </div>
+          <p class="text-lg text-muted">
+            Your AI Debate Coach
+          </p>
+        </div>
         <button 
           @click="goBack"
           class="mt-4 px-6 py-2 rounded-lg transition-colors duration-200 bg-surface text-primary hover:bg-surface-hover"
@@ -111,6 +116,7 @@ import { useRouter } from 'vue-router';
 import { store } from '../store.js';
 import AnalysisPanel from '../components/AnalysisPanel.vue'
 import ChatInterface from '../components/ChatInterface.vue'
+import EloquaLogo from '../components/EloquaLogo.vue'
 
 const router = useRouter()
 

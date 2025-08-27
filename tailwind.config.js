@@ -41,6 +41,10 @@ module.exports = {
         'chat-bot': 'rgb(var(--chat-bot) / <alpha-value>)',
         'chat-user-text': 'rgb(var(--chat-user-text) / <alpha-value>)',
         'chat-bot-text': 'rgb(var(--chat-bot-text) / <alpha-value>)',
+
+        /* Logo Colors */
+        'logo-left': 'rgb(var(--logo-left) / <alpha-value>)',
+        'logo-right': 'rgb(var(--logo-right) / <alpha-value>)',
       },
       backdropBlur: {
         xs: '2px',

@@ -45,6 +45,10 @@
   --chat-bot: 235 245 250; /* Light cool slate bot message background */
   --chat-user-text: 68 64 60; /* User message text */
   --chat-bot-text: 68 64 60; /* Bot message text */
+
+  /* Logo Colors */
+  --logo-left: 180 160 140; /* Medium coffee */
+  --logo-right: 140 100 80; /* Dark coffee */
 }
 
 .dark {
@@ -81,4 +85,8 @@
   --chat-bot: 45 55 70; /* Dark slate blue bot message background */
   --chat-user-text: 235 231 226; /* User message text */
   --chat-bot-text: 235 231 226; /* Bot message text */
+
+  /* Logo Colors */
+  --logo-left: 186 140 99; /* Latte */
+  --logo-right: 123 79 45; /* Coffee */
 }

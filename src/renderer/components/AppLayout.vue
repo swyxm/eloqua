@@ -5,7 +5,8 @@
       >
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between items-center h-16">
-            <div class="flex items-center">
+            <div class="flex items-center space-x-3">
+              <EloquaLogo class="w-5 h-4" />
               <h1 class="text-xl font-semibold text-primary">
                 <slot name="title">Eloqua</slot>
               </h1>
@@ -38,5 +39,6 @@
   </template>
   
   <script setup>
-  import ThemeToggle from './ThemeToggle.vue'
-  </script>
+import ThemeToggle from './ThemeToggle.vue'
+import EloquaLogo from './EloquaLogo.vue'
+</script>

@@ -2,8 +2,13 @@
   <div class="min-h-screen font-sans overflow-auto bg-bg text-primary">
 
       <header class="text-center mb-8">
-        <h1 class="text-5xl font-extrabold text-primary mb-2 tracking-tight">Eloqua</h1>
-        <p class="text-secondary text-lg">Your AI Debate Coach</p>
+        <div class="flex flex-col items-center space-y-4">
+          <div class="flex items-center space-x-4">
+            <EloquaLogo class="w-20 h-14" />
+            <h1 class="text-5xl font-extrabold text-primary tracking-tight">Eloqua</h1>
+          </div>
+          <p class="text-secondary text-lg">Your AI Debate Coach</p>
+        </div>
       </header>
 
       <div class="max-w-5xl mx-auto">
@@ -185,6 +190,7 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { store } from '../store.js';
 import FileUpload from '../components/FileUpload.vue';
+import EloquaLogo from '../components/EloquaLogo.vue';
 import { ChevronsUp, ChevronUp, ChevronDown, ChevronsDown } from 'lucide-vue-next';
 
 const components = {

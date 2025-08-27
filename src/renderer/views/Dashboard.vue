@@ -28,9 +28,14 @@
       <div class="relative">
         <div class="relative bg-card/80 backdrop-blur-md rounded-xl shadow-lg p-6 border border-border/50">
           <div class="text-center mb-6">
-            <h1 class="text-4xl font-semibold mb-6 tracking-tight text-primary">
-              Your Speech Saga
-            </h1>
+            <div class="flex flex-col items-center space-y-4 mb-6">
+              <div class="flex items-center space-x-3">
+                <EloquaLogo class="w-16 h-11" />
+                <h1 class="text-4xl font-semibold tracking-tight text-primary">
+                  Your Speech Saga
+                </h1>
+              </div>
+            </div>
             <router-link
               to="/"
               class="inline-flex items-center px-6 py-3 bg-accent hover:bg-accent/90 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
@@ -327,6 +332,7 @@ import { useRouter } from 'vue-router'
 import { store } from '../store.js'
 import { createClient } from '@supabase/supabase-js'
 import SpeechCard from '../components/SpeechCard.vue'
+import EloquaLogo from '../components/EloquaLogo.vue'
 import { MicVocal, Trophy, Target, Calendar, Clock, CalendarDays, BarChart3 } from 'lucide-vue-next'
 
 const router = useRouter()
