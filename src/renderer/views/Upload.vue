@@ -3,8 +3,8 @@
 
       <header class="text-center mb-8">
         <div class="flex flex-col items-center space-y-4">
-          <div class="flex items-center space-x-4">
-            <EloquaLogo class="w-20 h-14" />
+          <div class="flex items-center space-x-2">
+            <EloquaLogo class="w-17 h-14" />
             <h1 class="text-5xl font-extrabold text-primary tracking-tight">Eloqua</h1>
           </div>
           <p class="text-secondary text-lg">Your AI Debate Coach</p>
