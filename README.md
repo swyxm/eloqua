@@ -166,6 +166,64 @@ model = whisper.load_model("base")
 - First download may take 1-5 minutes depending on model size and then you're chilling after that.
 - Models are cached after first download
 
+## 🚀 Building & Distribution
+
+### Prerequisites for Building
+
+- **macOS**: Xcode Command Line Tools (`xcode-select --install`)
+- **Windows**: Visual Studio Build Tools
+- **Linux**: `build-essential` package
+
+### Quick Build Commands
+
+```bash
+# Build Vue app
+npm run build
+
+# Package for current platform
+npm run electron:pack
+
+# Create distributable
+npm run electron:dist
+
+# Or use the build script
+./build.sh
+```
+
+### Build Outputs
+
+After building, check the `dist-electron/` folder for:
+- **macOS**: `.dmg` file
+- **Windows**: `.exe` installer
+- **Linux**: `.AppImage` file
+
+### Automated Builds with GitHub Actions
+
+1. **Push a tag** to trigger automatic builds:
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+
+2. **GitHub Actions will automatically**:
+   - Build for all platforms (macOS, Windows, Linux)
+   - Create a release with all platform builds
+   - Upload installable packages
+
+### Manual Release Process
+
+1. **Build locally**: `npm run electron:dist`
+2. **Go to GitHub**: Repo → Releases → "Create a new release"
+3. **Upload files**: Drag and drop files from `dist-electron/` folder
+4. **Publish**: Write release notes and publish
+
+### End-User Installation
+
+Users can download your app by:
+1. Going to your GitHub repo → Releases
+2. Downloading the appropriate file for their platform
+3. Installing the downloaded package
+
 ## 📄 License
 
 This project is licensed under the MIT License.
