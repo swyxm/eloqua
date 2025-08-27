@@ -105,7 +105,7 @@
               <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
             </svg>
           </div>
-          <div class="text-sm font-bold text-primary">{{ speech.analysis_result?.duration_seconds || 'N/A' }}s</div>
+          <div class="text-sm font-bold text-primary">{{ formatDuration(speech.analysis_result?.duration_seconds) }}</div>
           <div class="text-xs text-muted">Duration</div>
         </div>
         <div class="text-center">
@@ -179,6 +179,20 @@ const getScorePercentage = (score, format = 'BP') => {
   if (!score) return 0
   const maxScore = format === 'BP' ? 85 : 75
   return Math.min((score / maxScore) * 100, 100)
+}
+
+const formatDuration = (seconds) => {
+  if (!seconds) return 'N/A'
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = Math.floor(seconds % 60)
+  
+  if (minutes === 0) {
+    return `${remainingSeconds}s`
+  } else if (remainingSeconds === 0) {
+    return `${minutes}m`
+  } else {
+    return `${minutes}m ${remainingSeconds}s`
+  }
 }
 </script>
 

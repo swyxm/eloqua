@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen p-8 font-sans overflow-auto bg-bg text-primary">
     <div class="max-w-6xl mx-auto space-y-8">
-      <!-- Back Button -->
       <div class="flex items-center space-x-4">
         <router-link
           to="/dashboard"
@@ -10,7 +9,7 @@
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
-          Back to Dashboard
+          Dashboard
         </router-link>
       </div>
 
@@ -67,35 +66,97 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div class="lg:col-span-2 space-y-6">
+        <div class="grid grid-cols-1 gap-8">
+          <div class="space-y-6">
             <div class="bg-card backdrop-blur-md rounded-xl shadow-lg p-6 border border-border">
               <h2 class="text-2xl font-semibold text-primary mb-4">Analysis Results</h2>
               
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-accent/10 p-6 rounded-xl border border-accent/20">
-                  <div class="text-sm text-accent font-medium mb-2">Overall Score</div>
-                  <div class="text-4xl font-black text-accent">{{ speech.llm_analysis?.score || 'N/A' }}</div>
-                  <div class="text-sm text-accent/70 mt-1">out of {{ speech.debate_format === 'BP' ? '85' : '75' }}</div>
-                </div>
-                
-                <div class="space-y-4">
-                  <div class="bg-surface p-4 rounded-lg">
+                              <div class="analysis-grid gap-4 w-full">
+                  <div class="bg-accent/10 p-2 rounded-lg">
+                    <div class="flex items-center justify-center">
+                      <div class="relative w-20 h-20">
+                        <svg class="w-20 h-20 transform rotate-270" viewBox="0 0 64 64">
+                          <defs>
+                            <linearGradient id="lowScore" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" style="stop-color:#f97316;stop-opacity:1" />
+                              <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="midScore" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+                              <stop offset="100%" style="stop-color:#84cc16;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="highScore" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" style="stop-color:#84cc16;stop-opacity:1" />
+                              <stop offset="100%" style="stop-color:#22c55e;stop-opacity:1" />
+                            </linearGradient>
+                            <linearGradient id="excellentScore" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+                              <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
+                            </linearGradient>
+                          </defs>
+                          <circle
+                            cx="32"
+                            cy="32"
+                            r="28"
+                            stroke="currentColor"
+                            stroke-width="4"
+                            fill="none"
+                            class="text-surface"
+                          />
+                          <circle
+                            cx="32"
+                            cy="32"
+                            r="28"
+                            stroke-width="4"
+                            fill="none"
+                            stroke-linecap="round"
+                            :stroke-dasharray="`${2 * Math.PI * 28}`"
+                            :stroke-dashoffset="`${2 * Math.PI * 28 * (1 - (getScorePercentage(speech.llm_analysis?.score, speech.debate_format) / 100))}`"
+                            :stroke="getScoreGradient(speech.llm_analysis?.score, speech.debate_format)"
+                            class="progress-ring"
+                            :style="`--final-offset: ${2 * Math.PI * 28 * (1 - (getScorePercentage(speech.llm_analysis?.score, speech.debate_format) / 100))}px`"
+                          />
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                          <span class="text-3xl font-semibold text-primary">
+                            {{ speech.llm_analysis?.score || 'N/A' }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="bg-accent/10 p-4 rounded-lg">
                     <div class="text-sm text-muted mb-1">Duration</div>
-                    <div class="text-xl font-semibold text-primary">{{ speech.analysis_result?.duration_seconds || 'N/A' }}s</div>
+                    <div class="text-2xl font-semibold text-primary">{{ formatDuration(speech.analysis_result?.duration_seconds) }}</div>
                   </div>
-                  <div class="bg-surface p-4 rounded-lg">
-                    <div class="text-sm text-muted mb-1">Word Count</div>
-                    <div class="text-xl font-semibold text-primary">{{ speech.analysis_result?.transcript_stats?.word_count || 'N/A' }}</div>
+                  
+                  <div class="bg-accent/10 p-4 rounded-lg">
+                    <div class="text-sm text-muted mb-1">Words</div>
+                    <div class="text-2xl font-semibold text-primary">{{ speech.analysis_result?.transcript_stats?.word_count || 'N/A' }}</div>
+                  </div>
+                  
+                  <div class="bg-accent/10 p-4 rounded-lg">
+                    <div class="text-sm text-muted mb-1">Position</div>
+                    <div class="text-2xl font-semibold text-primary">{{ speech.position }}</div>
+                  </div>
+                  
+                  <div class="bg-accent/10 p-4 rounded-lg">
+                    <div class="text-sm text-muted mb-1">Date</div>
+                    <div class="text-2xl font-semibold text-primary">{{ formatDate(speech.speech_date) }}</div>
+                  </div>
+                  
+                  <div class="bg-accent/10 p-4 rounded-lg">
+                    <div class="text-sm text-muted mb-1">Format</div>
+                    <div class="text-2xl font-semibold text-primary">{{ speech.debate_format }}</div>
                   </div>
                 </div>
-              </div>
 
               <div v-if="speech.llm_analysis?.feedback" class="mt-6">
-                <h3 class="text-lg font-semibold text-primary mb-3">AI Feedback</h3>
+                <h3 class="text-lg mb-2 font-semibold text-primary">RhetorIQ™ Analysis</h3>
                 
                 <div v-if="parsedFeedback.introThoughts" class="mb-4">
-                  <div class="bg-surface p-4 rounded-lg">
+                  <div class="bg-surface rounded-lg">
                     <div class="text-primary leading-relaxed markdown-content" v-html="renderMarkdown(parsedFeedback.introThoughts)"></div>
                   </div>
                 </div>
@@ -153,40 +214,6 @@
           </div>
 
           <div class="space-y-6">
-            <div class="bg-card backdrop-blur-md rounded-xl shadow-lg p-6 border border-border">
-              <h3 class="text-lg font-semibold text-primary mb-4">Speech Details</h3>
-              <div class="space-y-3">
-                <div class="flex justify-between">
-                  <span class="text-muted">Format:</span>
-                  <span class="font-medium">{{ speech.debate_format }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-muted">Position:</span>
-                  <span class="font-medium">{{ speech.position }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-muted">Round Type:</span>
-                  <span class="font-medium">{{ speech.round_type }}</span>
-                </div>
-                <div v-if="speech.round_number" class="flex justify-between">
-                  <span class="text-muted">Round Number:</span>
-                  <span class="font-medium">{{ speech.round_number }}</span>
-                </div>
-                <div v-if="speech.place_in_round" class="flex justify-between">
-                  <span class="text-muted">Place in Round:</span>
-                  <span class="font-medium text-success">{{ speech.place_in_round }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-muted">Date:</span>
-                  <span class="font-medium">{{ formatDate(speech.speech_date) }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-muted">Created:</span>
-                  <span class="font-medium">{{ formatDate(speech.created_at) }}</span>
-                </div>
-              </div>
-            </div>
-
             <div v-if="speech.prosody_stats" class="bg-card backdrop-blur-md rounded-xl shadow-lg p-6 border border-border">
               <h3 class="text-lg font-semibold text-primary mb-4">Speech Metrics</h3>
               <div class="space-y-3">
@@ -295,6 +322,20 @@ const formatDate = (dateString) => {
   })
 }
 
+const formatDuration = (seconds) => {
+  if (!seconds) return 'N/A'
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = Math.floor(seconds % 60)
+  
+  if (minutes === 0) {
+    return `${remainingSeconds}s`
+  } else if (remainingSeconds === 0) {
+    return `${minutes}m`
+  } else {
+    return `${minutes}m ${remainingSeconds}s`
+  }
+}
+
 const parseFeedback = (feedback) => {
   if (!feedback) return {}
   
@@ -368,6 +409,25 @@ const renderMarkdown = (text) => {
     .replace(/<p class="mb-3"><br><\/p>/g, '')
 }
 
+// Score helper functions for the progress ring
+const getScoreGradient = (score, format = 'BP') => {
+  if (!score) return 'url(#lowScore)'
+  const maxScore = format === 'BP' ? 85 : 75
+  const percentage = score / maxScore
+  
+  if (percentage >= 0.94) return 'url(#excellentScore)' // 80-85: Vibrant green
+  if (percentage >= 0.88) return 'url(#highScore)'      // 75-80: Healthy green
+  if (percentage >= 0.82) return 'url(#midScore)'       // 70-75: Yellow-green
+  if (percentage >= 0.76) return 'url(#lowScore)'       // 65-70: Orange-yellow
+  return 'url(#lowScore)' // Below 65: Orange
+}
+
+const getScorePercentage = (score, format = 'BP') => {
+  if (!score) return 0
+  const maxScore = format === 'BP' ? 85 : 75
+  return Math.min((score / maxScore) * 100, 100)
+}
+
 onMounted(() => {
   loadSpeech()
 })
@@ -396,5 +456,24 @@ onMounted(() => {
 
 .markdown-content :deep(strong) {
   @apply font-semibold;
+}
+
+.progress-ring {
+  animation: progressAnimation 1.5s ease-out forwards;
+}
+
+@keyframes progressAnimation {
+  from {
+    stroke-dashoffset: 175.93; /* Full circle (2 * π * 28) */
+  }
+  to {
+    stroke-dashoffset: var(--final-offset);
+  }
+}
+
+.analysis-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 0.8fr 1.4fr 1.6fr 0.6fr;
+  grid-template-rows: 1fr;
 }
 </style>
