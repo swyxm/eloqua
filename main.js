@@ -4,10 +4,19 @@ const isDev = require('electron-is-dev');
 const { spawn } = require('child_process');
 
 
-// Import services
 const SpeechAnalyzer = require('./src/main/services/speechAnalyzer.js');
+const debateCoach = require('./src/main/services/debateCoach.js');
 const speechAnalyzer = new SpeechAnalyzer();
 
+if (debateCoach && typeof debateCoach.getChatResponse === 'function') {  
+  debateCoach.getChatResponse(
+    { motion: 'test', debate_format: 'BP', position: 'PM', score: 75, duration: 120, llm_feedback: 'test' },
+    'test message',
+    []
+  ).then(response => {
+  }).catch(error => {
+  });
+}
 const fileService = {
   selectAudioFile: async () => {
     const { dialog } = require('electron');
@@ -21,16 +30,6 @@ const fileService = {
   }
 };
 
-const chatService = {
-  getResponse: async (analysis, message) => {
-    // Placeholder - implement your chat logic here
-    return {
-      response: "Chat service not implemented yet",
-      analysis: analysis,
-      userMessage: message
-    };
-  }
-};
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -43,8 +42,6 @@ function createWindow() {
     }
   });
 
-  // Load the index.html from the dist folder in production
-  // or the dev server in development
   if (isDev) {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
@@ -67,7 +64,6 @@ app.on('activate', () => {
   }
 });
 
-// IPC Handlers
 ipcMain.handle('transcribe', async (event, { audioPath }) => {
     return new Promise((resolve, reject) => {
       const pythonScript = path.join(__dirname, 'src', 'main', 'python', 'transcribe.py');
@@ -115,6 +111,18 @@ ipcMain.handle('analyze-speech', async (event, { audioPath, motion, format, posi
   return speechAnalyzer.analyze(audioPath, motion, format, position, placeInRound, specificFeedback);
 });
 
-ipcMain.handle('chat', async (event, { analysis, message }) => {
-  return chatService.getResponse(analysis, message);
+ipcMain.handle('chat', async (event, { speechData, message, conversationHistory }) => {
+  
+  try {
+    if (!debateCoach || typeof debateCoach.getChatResponse !== 'function') {
+      console.error('debateCoach service not properly loaded');
+      return { success: false, error: 'Debate coach service not available' };
+    }
+    
+    const response = await debateCoach.getChatResponse(speechData, message, conversationHistory);
+    return { success: true, response };
+  } catch (error) {
+    console.error('Chat error:', error);
+    return { success: false, error: error.message };
+  }
 }); 

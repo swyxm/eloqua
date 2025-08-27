@@ -8,6 +8,7 @@ Eloqua is an intelligent debate speech analysis **desktop application** that hel
 
 - **🎤 Speech Recording & Upload**: Record or upload your debate speeches in various audio formats
 - **🤖 AI-Powered Analysis**: Uses OpenAI's Whisper models for accurate transcription and analysis
+- **💬 AI Debate Coach**: Personalized coaching with persistent conversation memory
 - **📊 Performance Scoring**: Get detailed scores and feedback on your debate performance
 - **🎵 Prosody Analysis**: Advanced audio analysis including pitch, volume, jitter, and speaking pace metrics
 - **📈 Progress Tracking**: Visual timeline of your debate journey with statistics and trends
@@ -75,6 +76,7 @@ Eloqua is an intelligent debate speech analysis **desktop application** that hel
      - `analysis_result` column (JSONB) for transcript, duration, and prosody data
      - `llm_analysis` column (JSONB) for AI-generated scores and feedback
      - `prosody_stats` column (JSONB) for detailed speech analysis metrics
+     - `chat_context` column (JSONB) for persistent AI coach conversation history
 
 ### Running the Application
 

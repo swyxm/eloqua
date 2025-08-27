@@ -10,4 +10,10 @@ contextBridge.exposeInMainWorld('electron', {
       throw new Error(`Invalid channel: ${channel}`);
     }
   }
+});
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  selectFile: () => ipcRenderer.invoke('select-file'),
+  analyzeSpeech: (data) => ipcRenderer.invoke('analyze-speech', data),
+  chat: (data) => ipcRenderer.invoke('chat', data)
 }); 

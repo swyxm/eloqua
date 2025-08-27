@@ -35,6 +35,12 @@ module.exports = {
         'input-bg': 'rgb(var(--input-bg) / <alpha-value>)',
         'input-border': 'rgb(var(--input-border) / <alpha-value>)',
         'input-border-hover': 'rgb(var(--input-border-hover) / <alpha-value>)',
+
+        /* Chat Message Colors */
+        'chat-user': 'rgb(var(--chat-user) / <alpha-value>)',
+        'chat-bot': 'rgb(var(--chat-bot) / <alpha-value>)',
+        'chat-user-text': 'rgb(var(--chat-user-text) / <alpha-value>)',
+        'chat-bot-text': 'rgb(var(--chat-bot-text) / <alpha-value>)',
       },
       backdropBlur: {
         xs: '2px',

@@ -28,12 +28,9 @@
       <div class="relative">
         <div class="relative bg-card/80 backdrop-blur-md rounded-xl shadow-lg p-6 border border-border/50">
           <div class="text-center mb-6">
-            <h1 class="text-4xl font-semibold mb-3 tracking-tight text-primary">
+            <h1 class="text-4xl font-semibold mb-6 tracking-tight text-primary">
               Your Speech Saga
             </h1>
-            <p class="text-base text-muted mb-4">
-              Your journey through competitive debate
-            </p>
             <router-link
               to="/"
               class="inline-flex items-center px-6 py-3 bg-accent hover:bg-accent/90 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"

@@ -39,15 +39,13 @@
       </div>
 
       <div v-else class="space-y-8">
-        <div class="bg-card backdrop-blur-md rounded-xl shadow-lg p-6 border border-border">
+        <div class="bg-card backdrop-blur-md rounded-xl shadow-lg p-4 border border-border">
           <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <div>
               <h1 class="text-4xl font-semibold text-primary mb-3">{{ speech.motion }}</h1>
               <div class="flex flex-wrap items-center gap-3 text-sm text-muted">
-                <span class="px-3 py-1 bg-primary/10 text-primary rounded-full font-medium">{{ speech.debate_format }}</span>
-                <span class="px-3 py-1 bg-surface text-secondary rounded-full">{{ speech.position }}</span>
+                <span class="px-3 py-1 bg-primary/10 text-primary rounded-full">{{ speech.debate_format }}</span>
                 <span v-if="speech.tournament_name" class="px-3 py-1 bg-info/10 text-info rounded-full">{{ speech.tournament_name }}</span>
-                <span v-if="speech.place_in_round" class="px-3 py-1 bg-success/10 text-success rounded-full">{{ speech.place_in_round }}</span>
                 <span class="text-muted">{{ formatDate(speech.created_at) }}</span>
               </div>
             </div>
@@ -66,16 +64,57 @@
           </div>
         </div>
 
+        <!-- Collapsible Chat Card -->
+        <div class="bg-card backdrop-blur-md rounded-xl shadow-lg border border-border">
+          <div 
+            @click="toggleChat"
+            class="flex items-center justify-between p-4 cursor-pointer hover:bg-surface/30 transition-colors rounded-t-xl"
+          >
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 bg-accent/20 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-primary">Debbie</h3>
+                <p class="text-sm text-muted">Ask specific questions about your speech performance</p>
+              </div>
+            </div>
+            <svg 
+              :class="['w-5 h-5 text-muted transition-transform duration-200', isChatExpanded ? 'rotate-180' : '']"
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </div>
+          
+          <div 
+            v-if="isChatExpanded"
+            class="border-t border-border"
+          >
+            <div class="h-96">
+              <ChatInterface
+                :messages="chatMessages"
+                :isLoading="isChatLoading"
+                :isTyping="isChatTyping"
+                @send-message="handleChatMessage"
+              />
+            </div>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 gap-8">
           <div class="space-y-6">
             <div class="bg-card backdrop-blur-md rounded-xl shadow-lg p-6 border border-border">
               <h2 class="text-2xl font-semibold text-primary mb-4">Analysis Results</h2>
-              
-                              <div class="analysis-grid gap-4 w-full">
-                  <div class="bg-accent/10 p-2 rounded-lg">
+                <div class="analysis-grid gap-4 w-full">
+                  <div class="bg-accent/10 pt-3 pb-2 rounded-lg">
                     <div class="flex items-center justify-center">
-                      <div class="relative w-20 h-20">
-                        <svg class="w-20 h-20 transform rotate-270" viewBox="0 0 64 64">
+                      <div class="relative w-16 h-16">
+                        <svg class="w-16 h-16 transform rotate-270" viewBox="0 0 64 64">
                           <defs>
                             <linearGradient id="lowScore" x1="0%" y1="0%" x2="100%" y2="100%">
                               <stop offset="0%" style="stop-color:#f97316;stop-opacity:1" />
@@ -246,6 +285,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createClient } from '@supabase/supabase-js'
+import ChatInterface from '../components/ChatInterface.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -262,6 +302,13 @@ const parsedFeedback = ref({
   deliveryFeedback: '',
   roleSpecificAdvice: ''
 })
+
+const isChatExpanded = ref(false)
+const chatMessages = ref([])
+const isChatLoading = ref(false)
+const isChatTyping = ref(false)
+const conversationHistory = ref([])
+const chatContext = ref([])
 
 const loadSpeech = async () => {
   try {
@@ -285,6 +332,17 @@ const loadSpeech = async () => {
     }
     if (data.llm_analysis?.feedback) {
       parsedFeedback.value = parseFeedback(data.llm_analysis.feedback)
+    }
+    
+    if (data.chat_context && Array.isArray(data.chat_context)) {
+      chatContext.value = data.chat_context
+      chatMessages.value = data.chat_context.map((msg, index) => ({
+        id: index,
+        text: msg.content,
+        isUser: msg.role === 'user',
+        timestamp: new Date().toISOString()
+      }))
+      conversationHistory.value = data.chat_context
     }
   } catch (error) {
     console.error('Error loading speech:', error)
@@ -426,6 +484,131 @@ const getScorePercentage = (score, format = 'BP') => {
   if (!score) return 0
   const maxScore = format === 'BP' ? 85 : 75
   return Math.min((score / maxScore) * 100, 100)
+}
+
+const toggleChat = async () => {
+  isChatExpanded.value = !isChatExpanded.value
+  if (isChatExpanded.value && chatMessages.value.length === 0) {
+    const welcomeMessage = {
+      id: Date.now(),
+      text: `Hello! I'm your AI Debate Coach. I've analyzed your ${speech.value?.debate_format || 'debate'} speech on "${speech.value?.motion || 'the motion'}" where you spoke as ${speech.value?.position || 'your position'}. Your score was ${speech.value?.llm_analysis?.score || 'N/A'}. Ask me anything specific about your performance, argument structure, delivery, or how to improve!`,
+      isUser: false,
+      timestamp: new Date().toISOString()
+    };
+    chatMessages.value.push(welcomeMessage);
+    conversationHistory.value.push({ role: 'assistant', content: welcomeMessage.text })
+    await saveChatContext()
+  }
+}
+
+const handleChatMessage = async (message) => {
+  if (!speech.value) return
+  if (!window.electronAPI || !window.electronAPI.chat) {
+    console.error('electronAPI.chat is not available');
+    const errorMessage = {
+      id: Date.now() + 1,
+      text: "Chat service is not available. Please restart the application.",
+      isUser: false,
+      timestamp: new Date().toISOString()
+    };
+    chatMessages.value.push(errorMessage);
+    return;
+  }
+  
+  const userMessage = {
+    id: Date.now(),
+    text: message,
+    isUser: true,
+    timestamp: new Date().toISOString()
+  }
+  chatMessages.value.push(userMessage)
+  
+  conversationHistory.value.push({ role: 'user', content: message })
+  isChatLoading.value = true
+  isChatTyping.value = true
+  
+  try {
+    const speechData = {
+      motion: speech.value.motion || '',
+      debate_format: speech.value.debate_format || '',
+      position: speech.value.position || '',
+      score: speech.value.llm_analysis?.score || null,
+      duration: speech.value.analysis_result?.duration_seconds || null,
+      llm_feedback: speech.value.llm_analysis?.feedback || ''
+    }
+    const cleanConversationHistory = conversationHistory.value.map(msg => {
+      try {
+        return {
+          role: String(msg.role || 'user'),
+          content: String(msg.content || '')
+        };
+      } catch (error) {
+        console.warn('Failed to clean message:', msg, error);
+        return {
+          role: 'user',
+          content: 'Message content unavailable'
+        };
+      }
+    }).filter(msg => msg.content && msg.content.trim() !== '');
+    const result = await window.electronAPI.chat({
+      speechData,
+      message,
+      conversationHistory: cleanConversationHistory
+    })
+    if (result.success) {
+      const coachMessage = {
+        id: Date.now() + 1,
+        text: result.response,
+        isUser: false,
+        timestamp: new Date().toISOString()
+      }
+      chatMessages.value.push(coachMessage)
+      
+      conversationHistory.value.push({ role: 'assistant', content: result.response })
+      await saveChatContext()
+    } else {
+      const errorMessage = {
+        id: Date.now() + 1,
+        text: "I'm having trouble responding right now. Please try again.",
+        isUser: false,
+        timestamp: new Date().toISOString()
+      }
+      chatMessages.value.push(errorMessage)
+    }
+  } catch (error) {
+    console.error('Chat error:', error)
+    const errorMessage = {
+      id: Date.now() + 1,
+      text: "Sorry, I encountered an error. Please try again.",
+      isUser: false,
+      timestamp: new Date().toISOString()
+    }
+    chatMessages.value.push(errorMessage)
+  } finally {
+    isChatLoading.value = false
+    isChatTyping.value = false
+  }
+}
+
+const saveChatContext = async () => {
+  if (!speech.value?.id) return
+  
+  try {
+    const contextToSave = conversationHistory.value.map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }))
+    const { error } = await supabase
+      .from('speeches')
+      .update({ chat_context: contextToSave })
+      .eq('id', speech.value.id)
+    
+    if (error) {
+      console.error('Error saving chat context:', error)
+    }
+  } catch (error) {
+    console.error('Error saving chat context:', error)
+  }
 }
 
 onMounted(() => {

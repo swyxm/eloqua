@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS speeches (
     analysis_result JSONB,
     llm_analysis JSONB,
     prosody_stats JSONB,
+    chat_context JSONB DEFAULT '[]',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
