@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "dev:electron": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && npm start\"",
     "electron:build": "npm run build && electron-builder",
     "electron:pack": "npm run build && electron-builder --dir",
     "electron:dist": "npm run build && electron-builder"
@@ -44,7 +45,8 @@
     "files": [
       "dist/**/*",
       "main.js",
-      "preload.js"
+      "preload.js",
+      "src/main/services/**/*"
     ],
     "extraResources": [
       {

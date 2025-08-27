@@ -4,19 +4,24 @@ const isDev = require('electron-is-dev');
 const { spawn } = require('child_process');
 
 
-const SpeechAnalyzer = require('./src/main/services/speechAnalyzer.js');
-const debateCoach = require('./src/main/services/debateCoach.js');
-const speechAnalyzer = new SpeechAnalyzer();
+let SpeechAnalyzer, debateCoach, speechAnalyzer;
 
-if (debateCoach && typeof debateCoach.getChatResponse === 'function') {  
-  debateCoach.getChatResponse(
-    { motion: 'test', debate_format: 'BP', position: 'PM', score: 75, duration: 120, llm_feedback: 'test' },
-    'test message',
-    []
-  ).then(response => {
-  }).catch(error => {
-  });
-}
+try {
+  SpeechAnalyzer = require('./src/main/services/speechAnalyzer.js');
+  debateCoach = require('./src/main/services/debateCoach.js');
+  speechAnalyzer = new SpeechAnalyzer();
+  
+  if (debateCoach && typeof debateCoach.getChatResponse === 'function') {  
+    debateCoach.getChatResponse(
+      { motion: 'test', debate_format: 'BP', position: 'PM', score: 75, duration: 120, llm_feedback: 'test' },
+      'test message',
+      []
+    ).then(response => {
+    }).catch(error => {
+    });
+  }
+} catch (error) {
+  console.error('Failed to load services:', error.message);}
 const fileService = {
   selectAudioFile: async () => {
     const { dialog } = require('electron');
@@ -42,11 +47,21 @@ function createWindow() {
     }
   });
 
-  if (isDev) {
+  const distExists = require('fs').existsSync(path.join(__dirname, 'dist', 'index.html'));
+  
+  if (isDev && !distExists) {
     mainWindow.loadURL('http://localhost:5173');
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
+    console.log('Loading from production build:', path.join(__dirname, 'dist', 'index.html'));
+    mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+      console.error('Renderer failed to load:', errorCode, errorDescription);
+    });
+    mainWindow.webContents.on('console-message', (e, level, message, line, sourceId) => {
+      console.log('Renderer console:', { level, message, line, sourceId });
+    });
+    mainWindow.webContents.openDevTools();
   }
 }
 
