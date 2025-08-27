@@ -90,3 +90,11 @@ typings/
 
 # Electron-Forge
 out/
+
+# Build outputs
+dist/
+dist-electron/
+build/
+*.dmg
+*.exe
+*.AppImage
