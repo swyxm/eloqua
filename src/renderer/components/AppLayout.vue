@@ -1,8 +1,7 @@
-<!-- src/components/AppLayout.vue -->
 <template>
     <div class="min-h-screen transition-colors duration-300 bg-bg text-primary">
       <header 
-        class="sticky top-0 z-50 backdrop-blur-md transition-all duration-300 border-b bg-card/80 border-default"
+        class="sticky top-0 z-50 backdrop-blur-md transition-all duration-300 border-b bg-card/80 border-border"
       >
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between items-center h-16">
@@ -29,7 +28,7 @@
 
       <footer 
         v-if="$slots.footer"
-        class="border-t transition-colors duration-300 bg-card border-default text-muted"
+        class="border-t transition-colors duration-300 bg-card border-border text-muted"
       >
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <slot name="footer" />

@@ -43,12 +43,7 @@
 import { useRoute } from 'vue-router';
 import AppLayout from './AppLayout.vue';
 
-// The useRoute composable is still needed for navigation link styling.
 const route = useRoute();
-
-// All theme initialization and management logic has been moved to 
-// `useTheme.js` and `main.js` to ensure it runs before any components mount.
-// This component no longer needs to manage theme state.
 </script>
 
 <style scoped>

@@ -1,6 +1,5 @@
 <template>
-  <div class="chat-interface rounded-xl border border-default bg-card/50 backdrop-blur-sm transition-all duration-200 flex flex-col h-full">
-    <!-- Messages Container -->
+  <div class="chat-interface rounded-lg border border-border bg-card/50 backdrop-blur-sm transition-all duration-200 flex flex-col h-full">
     <div 
       ref="chatContainer"
       class="messages-container flex-1 p-4 overflow-y-auto"
@@ -9,7 +8,7 @@
         v-for="message in messages"
         :key="message.id"
         :class="[
-          'message p-3 rounded-lg mb-3 max-w-[80%]',
+          'message p-3 rounded-md mb-3 max-w-[80%]',
           'transition-all duration-200',
           message.isUser 
             ? 'ml-auto bg-accent text-white rounded-tr-none'
@@ -28,10 +27,9 @@
         </div>
       </div>
       
-      <!-- Typing indicator -->
       <div 
         v-if="isTyping"
-        class="typing-indicator flex items-center space-x-1 p-3 bg-surface rounded-lg w-24 mb-3"
+        class="typing-indicator flex items-center space-x-1 p-3 bg-surface rounded-md w-24 mb-3"
       >
         <div class="w-2 h-2 bg-secondary rounded-full animate-bounce" style="animation-delay: 0ms"></div>
         <div class="w-2 h-2 bg-secondary rounded-full animate-bounce" style="animation-delay: 150ms"></div>
@@ -39,8 +37,7 @@
       </div>
     </div>
 
-    <!-- Input Section -->
-    <div class="input-area border-t border-default p-4 bg-card/50 backdrop-blur-sm">
+    <div class="input-area border-t border-border p-4 bg-card/50 backdrop-blur-sm">
       <div class="flex gap-2">
         <input
           v-model="input"
@@ -99,7 +96,6 @@ const handleSubmit = () => {
 };
 
 const handleInput = () => {
-  // Optional: Handle input changes (e.g., for typing indicators)
 };
 
 const formatTime = (timestamp) => {
@@ -108,7 +104,6 @@ const formatTime = (timestamp) => {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-// Auto-scroll to bottom when messages change
 watch(
   () => props.messages,
   () => {

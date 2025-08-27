@@ -1,7 +1,6 @@
 <template>
   <div class="min-h-screen p-8 font-sans overflow-auto bg-bg text-primary">
     <div class="max-w-7xl mx-auto space-y-8">
-      <!-- Success Message -->
       <div v-if="showSuccessMessage" class="bg-success/10 border border-success/20 rounded-2xl p-6 mb-6 shadow-lg">
         <div class="flex items-center">
           <div class="flex-shrink-0">
@@ -26,84 +25,71 @@
         </div>
       </div>
 
-      <!-- Header with Stats -->
       <div class="relative">
-        <div class="absolute inset-0 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 rounded-3xl"></div>
-        <div class="relative bg-card backdrop-blur-md rounded-3xl shadow-xl p-8 border border-border">
-          <div class="text-center mb-8">
-            <h1 class="text-6xl font-black mb-4 tracking-tight text-primary">
-              Debate Timeline
+        <div class="relative bg-card/80 backdrop-blur-md rounded-xl shadow-lg p-6 border border-border/50">
+          <div class="text-center mb-6">
+            <h1 class="text-4xl font-semibold mb-3 tracking-tight text-primary">
+              Your Speech Saga
             </h1>
-            <p class="text-xl text-muted mb-6">
+            <p class="text-base text-muted mb-4">
               Your journey through competitive debate
             </p>
             <router-link
               to="/"
-              class="inline-flex items-center px-8 py-4 bg-accent hover:bg-accent/90 text-white font-bold rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              class="inline-flex items-center px-6 py-3 bg-accent hover:bg-accent/90 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
             >
-              <div class="w-6 h-6 mr-3 bg-white/20 rounded-full flex items-center justify-center">
-                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
-                </svg>
-              </div>
+              <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+              </svg>
               Record New Speech
             </router-link>
           </div>
 
-          <!-- Statistics Grid -->
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div class="bg-card backdrop-blur-md rounded-2xl p-6 border border-border">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+            <div class="bg-surface/60 backdrop-blur-sm rounded-lg p-4 border border-border/30">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-muted text-sm font-medium">Total Speeches</p>
-                  <p class="text-3xl font-black text-primary">{{ stats.total }}</p>
+                  <p class="text-muted text-xs font-medium">Total Speeches</p>
+                  <p class="text-2xl font-semibold text-primary">{{ stats.total }}</p>
                 </div>
-                <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                  <svg class="w-6 h-6 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
+                <div class="w-10 h-10 bg-primary/5 rounded-lg flex items-center justify-center">
+                  <MicVocal class="w-5 h-5 text-primary/70" />
                 </div>
               </div>
             </div>
 
-            <div class="bg-card backdrop-blur-md rounded-2xl p-6 border border-border">
+            <div class="bg-surface/60 backdrop-blur-sm rounded-lg p-4 border border-border/30">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-muted text-sm font-medium">Victories</p>
-                  <p class="text-3xl font-black text-success">{{ stats.victories }}</p>
+                  <p class="text-muted text-xs font-medium">Victories</p>
+                  <p class="text-2xl font-semibold text-success">{{ stats.victories }}</p>
                 </div>
-                <div class="w-12 h-12 bg-success/10 rounded-xl flex items-center justify-center">
-                  <svg class="w-6 h-6 text-success" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
-                  </svg>
+                <div class="w-10 h-10 bg-success/5 rounded-lg flex items-center justify-center">
+                  <Trophy class="w-5 h-5 text-success/70" />
                 </div>
               </div>
             </div>
 
-            <div class="bg-card backdrop-blur-md rounded-2xl p-6 border border-border">
+            <div class="bg-surface/60 backdrop-blur-sm rounded-lg p-4 border border-border/30">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-muted text-sm font-medium">Average Score</p>
-                  <p class="text-3xl font-black text-warning">{{ stats.averageScore }}</p>
+                  <p class="text-muted text-xs font-medium">Average Score</p>
+                  <p class="text-2xl font-semibold text-warning">{{ stats.averageScore }}</p>
                 </div>
-                <div class="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center">
-                  <svg class="w-6 h-6 text-warning" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                  </svg>
+                <div class="w-10 h-10 bg-warning/5 rounded-lg flex items-center justify-center">
+                  <Target class="w-5 h-5 text-warning/70" />
                 </div>
               </div>
             </div>
 
-            <div class="bg-card backdrop-blur-md rounded-2xl p-6 border border-border">
+            <div class="bg-surface/60 backdrop-blur-sm rounded-lg p-4 border border-border/30">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-muted text-sm font-medium">This Month</p>
-                  <p class="text-3xl font-black text-accent">{{ stats.thisMonth }}</p>
+                  <p class="text-muted text-xs font-medium">This Month</p>
+                  <p class="text-2xl font-semibold text-accent">{{ stats.thisMonth }}</p>
                 </div>
-                <div class="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center">
-                  <svg class="w-6 h-6 text-accent" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
-                  </svg>
+                <div class="w-10 h-10 bg-accent/5 rounded-lg flex items-center justify-center">
+                  <Calendar class="w-5 h-5 text-accent/70" />
                 </div>
               </div>
             </div>
@@ -111,63 +97,55 @@
         </div>
       </div>
 
-      <!-- View Toggle -->
-      <div class="flex justify-center mb-8">
-        <div class="flex items-center space-x-2 bg-surface rounded-xl p-1 shadow-lg">
+      <div class="flex justify-center mb-6">
+        <div class="flex items-center space-x-1 bg-surface/40 backdrop-blur-sm rounded-lg p-1 shadow-sm border border-border/20">
           <button
             @click="viewMode = 'timeline'"
-            class="flex items-center space-x-2 px-6 py-3 rounded-lg transition-all duration-200 font-medium"
-            :class="viewMode === 'timeline' ? 'bg-accent text-white shadow-lg' : 'text-muted hover:text-primary hover:bg-surface-hover'"
+            class="flex items-center space-x-2 px-4 py-2 rounded-md transition-all duration-200 text-sm font-medium"
+            :class="viewMode === 'timeline' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-primary hover:bg-surface/60'"
           >
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
-            </svg>
+            <Clock class="w-4 h-4" />
             <span>Timeline</span>
           </button>
           <button
             @click="viewMode = 'calendar'"
-            class="flex items-center space-x-2 px-6 py-3 rounded-lg transition-all duration-200 font-medium"
-            :class="viewMode === 'calendar' ? 'bg-accent text-white shadow-lg' : 'text-muted hover:text-primary hover:bg-surface-hover'"
+            class="flex items-center space-x-2 px-4 py-2 rounded-md transition-all duration-200 text-sm font-medium"
+            :class="viewMode === 'calendar' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-primary hover:bg-surface/60'"
           >
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
-            </svg>
+            <CalendarDays class="w-4 h-4" />
             <span>Calendar</span>
           </button>
           <button
             @click="viewMode = 'tournaments'"
-            class="flex items-center space-x-2 px-6 py-3 rounded-lg transition-all duration-200 font-medium"
-            :class="viewMode === 'tournaments' ? 'bg-accent text-white shadow-lg' : 'text-muted hover:text-primary hover:bg-surface-hover'"
+            class="flex items-center space-x-2 px-4 py-2 rounded-md transition-all duration-200 text-sm font-medium"
+            :class="viewMode === 'tournaments' ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-primary hover:bg-surface/60'"
           >
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
-            </svg>
+            <BarChart3 class="w-4 h-4" />
             <span>Tournaments</span>
           </button>
         </div>
       </div>
 
-      <!-- Search and Filters -->
-      <div class="bg-card backdrop-blur-md rounded-2xl shadow-xl p-6 border border-border">
-        <div class="flex flex-col lg:flex-row gap-4">
+      <div class="bg-card backdrop-blur-md rounded-xl shadow-lg p-4 border border-white/10">
+        <div class="flex flex-col lg:flex-row gap-3">
           <div class="flex-1">
             <div class="relative">
               <input
                 v-model="searchQuery"
                 type="text"
-                placeholder="Search speeches, motions, tournaments, positions, or metadata (e.g., 'first place', '>500 words', 'prime minister')..."
-                class="w-full px-6 py-4 pl-12 border border-border rounded-xl bg-surface text-primary focus:ring-4 focus:ring-accent/20 focus:border-accent transition-all duration-300 text-lg"
+                placeholder="Search speeches, motions, tournaments, positions, or use: >70 score, >5min, >500 words..."
+                class="w-full px-4 py-3 pl-10 border border-border rounded-lg bg-surface text-primary placeholder:text-muted/60 focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all duration-200 text-sm"
               />
-              <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
             </div>
           </div>
 
-          <div class="flex gap-4">
+          <div class="flex gap-3">
             <select
               v-model="filters.format"
-              class="px-6 py-4 border border-border rounded-xl bg-surface text-primary focus:ring-4 focus:ring-accent/20 focus:border-accent transition-all duration-300"
+              class="px-4 py-3 border border-border rounded-lg bg-surface text-primary focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all duration-200 text-sm"
             >
               <option value="">All Formats</option>
               <option value="BP">British Parliamentary</option>
@@ -176,7 +154,7 @@
 
             <select
               v-model="filters.dateRange"
-              class="px-6 py-4 border border-border rounded-xl bg-surface text-primary focus:ring-4 focus:ring-accent/20 focus:border-accent transition-all duration-300"
+              class="px-4 py-3 border border-border rounded-lg bg-surface text-primary focus:ring-2 focus:ring-accent/30 focus:border-accent/50 transition-all duration-200 text-sm"
             >
               <option value="">All Time</option>
               <option value="week">Last 7 days</option>
@@ -186,8 +164,9 @@
             </select>
 
             <button
+              v-if="hasActiveFilters"
               @click="clearFilters"
-              class="px-6 py-4 bg-surface hover:bg-surface-hover text-primary rounded-xl border border-border transition-all duration-300 font-medium"
+              class="px-4 py-3 bg-surface hover:bg-surface-hover text-primary rounded-lg border border-border transition-all duration-200 text-sm font-medium"
             >
               Clear
             </button>
@@ -195,19 +174,18 @@
         </div>
       </div>
 
-      <!-- Timeline View -->
-      <div v-if="viewMode === 'timeline'" class="space-y-8">
-        <div v-for="(group, date) in groupedSpeeches" :key="date" class="space-y-4">
-          <div class="flex items-center space-x-4">
-            <div class="w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl flex items-center justify-center">
+      <div v-if="viewMode === 'timeline'" class="space-y-6">
+        <div v-for="(group, date) in groupedSpeeches" :key="date" class="space-y-3">
+          <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 bg-surface/40 rounded-lg flex items-center justify-center border border-border/30">
               <div class="text-center">
-                <div class="text-lg font-black text-primary">{{ new Date(date).getDate() }}</div>
-                <div class="text-xs text-muted uppercase tracking-wide">{{ new Date(date).toLocaleDateString('en-US', { month: 'short' }) }}</div>
+                <div class="text-base font-semibold text-primary">{{ new Date(date).getDate() }}</div>
+                <div class="text-xs text-muted/70 uppercase tracking-wide">{{ new Date(date).toLocaleDateString('en-US', { month: 'short' }) }}</div>
               </div>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-primary">{{ new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</h3>
-              <p class="text-muted">{{ group.length }} speech{{ group.length !== 1 ? 'es' : '' }}</p>
+              <h3 class="text-lg font-medium text-primary">{{ new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</h3>
+              <p class="text-sm text-muted">{{ group.length }} speech{{ group.length !== 1 ? 'es' : '' }}</p>
             </div>
           </div>
           
@@ -223,10 +201,9 @@
         </div>
       </div>
 
-      <!-- Calendar View -->
       <div v-if="viewMode === 'calendar'" class="space-y-6">
         <div class="text-center py-12">
-          <div class="w-24 h-24 bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+          <div class="w-24 h-24 bg-surface rounded-lg flex items-center justify-center mx-auto mb-6 border border-border">
             <svg class="w-12 h-12 text-primary" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
             </svg>
@@ -237,10 +214,9 @@
         </div>
       </div>
 
-      <!-- Tournaments View -->
       <div v-if="viewMode === 'tournaments'" class="space-y-6">
         <div class="text-center py-12">
-          <div class="w-24 h-24 bg-gradient-to-br from-primary/20 to-accent/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+          <div class="w-24 h-24 bg-surface rounded-lg flex items-center justify-center mx-auto mb-6 border border-border">
             <svg class="w-12 h-12 text-primary" fill="currentColor" viewBox="0 0 20 20">
               <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
             </svg>
@@ -251,16 +227,15 @@
         </div>
       </div>
 
-      <!-- Empty State -->
-      <div v-if="filteredSpeeches.length === 0" class="text-center py-16">
+      <div v-if="filteredSpeeches.length === 0" class="text-center py-12">
         <div class="max-w-md mx-auto">
-          <div class="w-24 h-24 mx-auto mb-6 bg-primary/10 rounded-3xl flex items-center justify-center">
-            <svg class="w-12 h-12 text-primary" fill="currentColor" viewBox="0 0 20 20">
+          <div class="w-16 h-16 mx-auto mb-4 bg-primary/5 rounded-lg flex items-center justify-center">
+            <svg class="w-8 h-8 text-primary/60" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
             </svg>
           </div>
-          <h3 class="text-2xl font-bold text-primary mb-4">No speeches found</h3>
-          <p class="text-muted mb-8 text-lg">
+          <h3 class="text-xl font-medium text-primary mb-3">No speeches found</h3>
+          <p class="text-muted mb-6 text-base">
             {{ searchQuery || filters.format || filters.dateRange 
               ? 'Try adjusting your search or filters to find more speeches.' 
               : 'Start your debate journey by recording your first speech!' 
@@ -268,9 +243,9 @@
           </p>
           <router-link
             to="/"
-            class="inline-flex items-center px-8 py-4 bg-accent hover:bg-accent/90 text-white font-bold rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+            class="inline-flex items-center px-6 py-3 bg-accent hover:bg-accent/90 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
           >
-            <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
             </svg>
             Record Your First Speech
@@ -279,7 +254,6 @@
       </div>
     </div>
 
-    <!-- Speech Detail Modal -->
     <div
       v-if="selectedSpeech"
       class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
@@ -313,15 +287,13 @@
 
         <div class="p-8">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Analysis Results -->
             <div>
               <h3 class="text-xl font-bold text-primary mb-6">Analysis Results</h3>
               <div class="space-y-6">
                 <div class="bg-accent/10 p-6 rounded-2xl border border-accent/20">
                   <div class="text-sm text-accent font-medium mb-2">Overall Score</div>
-                  <div class="text-4xl font-black text-accent">{{ selectedSpeech.analysis_result?.score || 'N/A' }}</div>
+                  <div class="text-4xl font-black text-accent">{{ selectedSpeech.llm_analysis?.score || 'N/A' }}</div>
                 </div>
-                
                 <div class="grid grid-cols-2 gap-4">
                   <div class="bg-surface p-4 rounded-xl">
                     <div class="text-sm text-muted mb-1">Duration</div>
@@ -332,15 +304,13 @@
                     <div class="text-xl font-bold text-primary">{{ selectedSpeech.analysis_result?.transcript_stats?.word_count || 'N/A' }}</div>
                   </div>
                 </div>
-
-                <div v-if="selectedSpeech.analysis_result?.detailed_feedback" class="bg-surface p-6 rounded-xl">
-                  <div class="text-sm text-muted mb-3 font-medium">Detailed Feedback</div>
-                  <div class="text-primary whitespace-pre-wrap leading-relaxed">{{ selectedSpeech.analysis_result.detailed_feedback }}</div>
+                <div v-if="selectedSpeech.llm_analysis?.feedback" class="bg-surface p-6 rounded-xl">
+                  <div class="text-sm text-muted mb-3 font-medium">AI Feedback</div>
+                  <div class="text-primary leading-relaxed prose prose-sm max-w-none markdown-content" v-html="renderMarkdown(selectedSpeech.llm_analysis.feedback)"></div>
                 </div>
               </div>
             </div>
 
-            <!-- Transcript -->
             <div>
               <h3 class="text-xl font-bold text-primary mb-6">Transcript</h3>
               <div class="bg-surface p-6 rounded-xl max-h-96 overflow-y-auto">
@@ -360,6 +330,7 @@ import { useRouter } from 'vue-router'
 import { store } from '../store.js'
 import { createClient } from '@supabase/supabase-js'
 import SpeechCard from '../components/SpeechCard.vue'
+import { MicVocal, Trophy, Target, Calendar, Clock, CalendarDays, BarChart3 } from 'lucide-vue-next'
 
 const router = useRouter()
 const supabase = createClient(
@@ -373,7 +344,6 @@ const showSuccessMessage = ref(false)
 const viewMode = ref('timeline')
 const searchQuery = ref('')
 const currentPage = ref(1)
-const pageSize = 12
 
 const filters = ref({
   format: '',
@@ -382,7 +352,6 @@ const filters = ref({
 
 const sortBy = ref('date-desc')
 
-// Stats
 const stats = ref({
   total: 0,
   victories: 0,
@@ -390,16 +359,13 @@ const stats = ref({
   thisMonth: 0
 })
 
-// Computed properties
 const filteredSpeeches = computed(() => {
   let filtered = speeches.value
 
-  // Search filter with advanced metadata support
   if (searchQuery.value.trim()) {
     const query = searchQuery.value.toLowerCase()
     
     filtered = filtered.filter(speech => {
-      // Basic text search
       const basicMatch = 
         speech.motion.toLowerCase().includes(query) ||
         speech.tournament_name?.toLowerCase().includes(query) ||
@@ -407,67 +373,47 @@ const filteredSpeeches = computed(() => {
       
       if (basicMatch) return true
       
-      // Metadata search patterns
-      const patterns = [
-        // Word count search (e.g., ">500 words", "<300 words", "500+ words")
-        /(?:>|<|>=|<=)?(\d+)\s*(?:words?|w)/i,
-        // Position search (e.g., "prime minister", "first speaker", "opposition")
-        /(prime minister|deputy prime minister|leader of opposition|deputy leader|government|opposition|first speaker|second speaker|third speaker|reply)/i,
-        // Placement search (e.g., "first place", "won round", "second place")
-        /(first place|second place|third place|fourth place|won round|lost round|practice)/i,
-        // Score search (e.g., ">8", "<6", "high score")
-        /(?:>|<|>=|<=)?(\d+(?:\.\d+)?)\s*(?:score|points?)/i,
-        // Duration search (e.g., ">5 minutes", "<3 min")
-        /(?:>|<|>=|<=)?(\d+)\s*(?:minutes?|mins?|seconds?|s)/i
-      ]
+      if (query.includes('>') || query.includes('<') || query.includes('=')) {
+        if (query.includes('score') || query.includes('point')) {
+          const score = speech.llm_analysis?.score || 0
+          if (query.includes('>')) {
+            const value = parseFloat(query.match(/>(\d+)/)?.[1])
+            return !isNaN(value) && score > value
+          }
+          if (query.includes('<')) {
+            const value = parseFloat(query.match(/<(\d+)/)?.[1])
+            return !isNaN(value) && score < value
+          }
+          if (query.includes('=')) {
+            const value = parseFloat(query.match(/=(\d+)/)?.[1])
+            return !isNaN(value) && score === value
+          }
+        }
+        
+        if (query.includes('min') || query.includes('sec')) {
+          const duration = speech.analysis_result?.duration_seconds || 0
+          if (query.includes('>')) {
+            const value = parseFloat(query.match(/>(\d+)/)?.[1])
+            const durationInSeconds = query.includes('min') ? value * 60 : value
+            return !isNaN(value) && duration > durationInSeconds
+          }
+          if (query.includes('<')) {
+            const value = parseFloat(query.match(/<(\d+)/)?.[1])
+            const durationInSeconds = query.includes('min') ? value * 60 : value
+            return !isNaN(value) && duration < durationInSeconds
+          }
+        }
+      }
       
-      for (const pattern of patterns) {
-        const match = query.match(pattern)
-        if (match) {
-          const value = parseFloat(match[1])
-          const operator = query.match(/(>|<|>=|<=)/)?.[0]
-          
-          // Word count search
-          if (pattern.source.includes('words')) {
-            const wordCount = speech.analysis_result?.transcript_stats?.word_count || 0
-            if (operator === '>') return wordCount > value
-            if (operator === '<') return wordCount < value
-            if (operator === '>=') return wordCount >= value
-            if (operator === '<=') return wordCount <= value
-            return wordCount === value
-          }
-          
-          // Score search
-          if (pattern.source.includes('score')) {
-            const score = speech.analysis_result?.score || 0
-            if (operator === '>') return score > value
-            if (operator === '<') return score < value
-            if (operator === '>=') return score >= value
-            if (operator === '<=') return score <= value
-            return score === value
-          }
-          
-          // Duration search
-          if (pattern.source.includes('minutes') || pattern.source.includes('seconds')) {
-            const duration = speech.analysis_result?.duration_seconds || 0
-            const durationInSeconds = pattern.source.includes('minutes') ? value * 60 : value
-            if (operator === '>') return duration > durationInSeconds
-            if (operator === '<') return duration < durationInSeconds
-            if (operator === '>=') return duration >= durationInSeconds
-            if (operator === '<=') return duration <= durationInSeconds
-            return duration === durationInSeconds
-          }
-          
-          // Position search
-          if (pattern.source.includes('prime minister') || pattern.source.includes('speaker') || pattern.source.includes('opposition')) {
-            return speech.position.toLowerCase().includes(match[0])
-          }
-          
-          // Placement search
-          if (pattern.source.includes('place') || pattern.source.includes('round')) {
-            return speech.place_in_round?.toLowerCase().includes(match[0]) || 
-                   (speech.place_in_round === null && match[0].includes('practice'))
-          }
+      if (query.includes('words') || query.includes('word')) {
+        const wordCount = speech.analysis_result?.transcript_stats?.word_count || 0
+        if (query.includes('>')) {
+          const value = parseFloat(query.match(/>(\d+)/)?.[1])
+          return !isNaN(value) && wordCount > value
+        }
+        if (query.includes('<')) {
+          const value = parseFloat(query.match(/<(\d+)/)?.[1])
+          return !isNaN(value) && wordCount < value
         }
       }
       
@@ -475,12 +421,10 @@ const filteredSpeeches = computed(() => {
     })
   }
 
-  // Format filter
   if (filters.value.format) {
     filtered = filtered.filter(speech => speech.debate_format === filters.value.format)
   }
 
-  // Date range filter
   if (filters.value.dateRange) {
     const now = new Date()
     const cutoffDate = new Date()
@@ -511,9 +455,9 @@ const filteredSpeeches = computed(() => {
       case 'date-asc':
         return new Date(a.created_at) - new Date(b.created_at)
       case 'score-desc':
-        return (b.analysis_result?.score || 0) - (a.analysis_result?.score || 0)
+        return (b.llm_analysis?.score || 0) - (a.llm_analysis?.score || 0)
       case 'score-asc':
-        return (a.analysis_result?.score || 0) - (b.analysis_result?.score || 0)
+        return (a.llm_analysis?.score || 0) - (b.llm_analysis?.score || 0)
       default:
         return new Date(b.created_at) - new Date(a.created_at)
     }
@@ -546,7 +490,10 @@ const groupedSpeeches = computed(() => {
   return groups
 })
 
-// Methods
+const hasActiveFilters = computed(() => {
+  return searchQuery.value.trim() !== '' || filters.value.format !== '' || filters.value.dateRange !== ''
+})
+
 const loadSpeeches = async () => {
   try {
     isLoading.value = true
@@ -579,9 +526,12 @@ const calculateStats = () => {
   const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
   // Calculate average score only from speeches that have scores
-  const speechesWithScores = speeches.value.filter(s => s.analysis_result?.score !== null && s.analysis_result?.score !== undefined)
+  const speechesWithScores = speeches.value.filter(s => {
+    const score = s.llm_analysis?.score
+    return score !== null && score !== undefined
+  })
   const averageScore = speechesWithScores.length > 0 
-    ? (speechesWithScores.reduce((sum, s) => sum + s.analysis_result.score, 0) / speechesWithScores.length).toFixed(1)
+    ? (speechesWithScores.reduce((sum, s) => sum + s.llm_analysis.score, 0) / speechesWithScores.length).toFixed(1)
     : 'N/A'
 
   stats.value = {
@@ -605,9 +555,7 @@ const clearFilters = () => {
 }
 
 const viewSpeech = (speech) => {
-  // Navigate to speech detail view or show modal
-  console.log('Viewing speech:', speech)
-  // TODO: Implement speech detail view
+  router.push(`/speech/${speech.id}`)
 }
 
 const deleteSpeech = async (speechId) => {
@@ -634,18 +582,7 @@ const deleteSpeech = async (speechId) => {
   }
 }
 
-const scrollTimeline = (direction) => {
-  if (!timelineContainer.value) return
-  
-  const container = timelineContainer.value
-  const scrollAmount = 400
-  
-  if (direction === 'left') {
-    container.scrollBy({ left: -scrollAmount, behavior: 'smooth' })
-  } else {
-    container.scrollBy({ left: scrollAmount, behavior: 'smooth' })
-  }
-}
+
 
 const formatDate = (dateString) => {
   return new Date(dateString).toLocaleDateString('en-US', {
@@ -655,28 +592,91 @@ const formatDate = (dateString) => {
   })
 }
 
-const formatFullDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
+const parseFeedback = (feedback) => {
+  if (!feedback) return {}
+  
+  const sections = {
+    introThoughts: '',
+    contentAnalysis: '',
+    deliveryFeedback: '',
+    roleSpecificAdvice: ''
+  }
+  
+  const lines = feedback.split('\n')
+  let currentSection = 'introThoughts'
+  let currentContent = []
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim()
+    
+    if (line.startsWith('# ')) {
+      currentSection = 'introThoughts'
+      currentContent = []
+    } else if (line.startsWith('### Content Analysis:')) {
+      if (currentContent.length > 0) {
+        sections[currentSection] = currentContent.join('\n').trim()
+      }
+      currentSection = 'contentAnalysis'
+      currentContent = []
+    } else if (line.startsWith('### Delivery Feedback:')) {
+      if (currentContent.length > 0) {
+        sections[currentSection] = currentContent.join('\n').trim()
+      }
+      currentSection = 'deliveryFeedback'
+      currentContent = []
+    } else if (line.startsWith('### Role-Specific Advice')) {
+      if (currentContent.length > 0) {
+        sections[currentSection] = currentContent.join('\n').trim()
+      }
+      currentSection = 'roleSpecificAdvice'
+      currentContent = []
+    } else {
+      currentContent.push(line)
+    }
+  }
+  
+  if (currentContent.length > 0) {
+    sections[currentSection] = currentContent.join('\n').trim()
+  }
+  
+  return sections
 }
 
-// Watchers
+// Simple markdown renderer
+const renderMarkdown = (text) => {
+  if (!text) return ''
+  
+  return text
+    // Headers
+    .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-primary mb-2">$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold text-primary mb-3 mt-4">$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-semibold text-primary mb-4 mt-6">$1</h1>')
+    // Lists
+    .replace(/^\d+\.\s+(.*$)/gim, '<li class="ml-4 mb-1">$1</li>')
+    .replace(/^-\s+(.*$)/gim, '<li class="ml-4 mb-1">$1</li>')
+    // Bold
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
+    // Line breaks
+    .replace(/\n\n/g, '</p><p class="mb-3">')
+    .replace(/\n/g, '<br>')
+    // Wrap in paragraphs
+    .replace(/^(.+)$/gm, '<p class="mb-3">$1</p>')
+    // Clean up empty paragraphs
+    .replace(/<p class="mb-3"><\/p>/g, '')
+    .replace(/<p class="mb-3"><br><\/p>/g, '')
+}
+
 watch([searchQuery, filters, sortBy], () => {
   currentPage.value = 1
 })
 
-// Lifecycle
+
+
 onMounted(() => {
   loadSpeeches()
   
-  // Show success message if coming from analysis
   if (store.analysisData) {
     showSuccessMessage.value = true
-    // Clear the store data after showing message
     setTimeout(() => {
       store.analysisData = null
       store.sessionData = null
@@ -686,12 +686,29 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.markdown-content :deep(h1) {
+  @apply text-2xl font-semibold text-primary mb-4 mt-6;
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+.markdown-content :deep(h2) {
+  @apply text-xl font-semibold text-primary mb-3 mt-4;
 }
-</style> 
+
+.markdown-content :deep(h3) {
+  @apply text-lg font-semibold text-primary mb-2;
+}
+
+.markdown-content :deep(p) {
+  @apply mb-3 leading-relaxed;
+}
+
+.markdown-content :deep(li) {
+  @apply ml-4 mb-1;
+}
+
+.markdown-content :deep(strong) {
+  @apply font-semibold;
+}
+</style>
+
+ 

@@ -1,8 +1,8 @@
 <template>
   <div class="w-full">
     <div
-      class="relative border-2 border-dashed border-fileupload bg-fileupload rounded-xl p-8 text-center transition-all duration-200 cursor-pointer"
-      :class="{ 'border-accent': isDragging }"
+      class="relative border border-dashed rounded-lg p-8 text-center transition-all duration-200 cursor-pointer bg-surface border-border/60"
+      :class="{ 'border-accent/60 bg-accent/5': isDragging }"
       @dragover.prevent="isDragging = true"
       @dragleave.prevent="isDragging = false"
       @drop.prevent="handleFileDrop"
@@ -29,7 +29,7 @@
       </div>
 
       <div v-else class="space-y-4">
-        <div class="flex items-center justify-between bg-surface rounded-lg p-4">
+        <div class="flex items-center justify-between bg-surface rounded-md p-4 border border-border/60">
           <div class="flex items-center space-x-4">
             <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />

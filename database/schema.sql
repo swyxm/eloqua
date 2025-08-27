@@ -2,7 +2,7 @@
 -- This file contains the SQL schema for the Eloqua debate speech analysis application
 
 -- Enable Row Level Security (RLS)
-ALTER DATABASE postgres SET "app.jwt_secret" TO 'your-jwt-secret';
+-- Note: Set your JWT secret in your Supabase dashboard
 
 -- Create tournaments table
 CREATE TABLE IF NOT EXISTS tournaments (
@@ -25,6 +25,8 @@ CREATE TABLE IF NOT EXISTS speeches (
     speech_date DATE NOT NULL DEFAULT CURRENT_DATE,
     place_in_round TEXT,
     analysis_result JSONB,
+    llm_analysis JSONB,
+    prosody_stats JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

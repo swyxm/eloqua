@@ -18,11 +18,18 @@ module.exports = {
         /* Text Colors */
         primary: 'rgb(var(--text-primary) / <alpha-value>)',
         secondary: 'rgb(var(--text-secondary) / <alpha-value>)',
+        muted: 'rgb(var(--text-muted) / <alpha-value>)',
         'accent-text': 'rgb(var(--accent-text) / <alpha-value>)',
 
         /* Accent Colors */
         accent: 'rgb(var(--accent) / <alpha-value>)',
         'accent-hover': 'rgb(var(--accent-hover) / <alpha-value>)',
+
+        /* Semantic Colors */
+        success: 'rgb(var(--success) / <alpha-value>)',
+        warning: 'rgb(var(--warning) / <alpha-value>)',
+        error: 'rgb(var(--error) / <alpha-value>)',
+        info: 'rgb(var(--info) / <alpha-value>)',
 
         /* Input Control Colors */
         'input-bg': 'rgb(var(--input-bg) / <alpha-value>)',

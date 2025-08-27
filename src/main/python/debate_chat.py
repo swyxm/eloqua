@@ -4,19 +4,15 @@ from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
-# Initialize OpenAI client
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 def load_analysis(analysis_file):
-    """Load the speech analysis JSON file"""
     with open(analysis_file, 'r') as f:
         return json.load(f)
 
 def get_initial_feedback(analysis):
-    """Get initial feedback from the LLM based on the analysis"""
     response = client.chat.completions.create(
         model="gpt-4.1-mini",
         messages=[
@@ -27,16 +23,13 @@ def get_initial_feedback(analysis):
     return response.choices[0].message.content
 
 def chat_loop(analysis):
-    """Main chat loop for interactive feedback"""
     print("\n=== Debate Coach Chat Interface ===")
     print("Type 'exit' to quit, 'analysis' to see the original analysis")
     
-    # Get initial feedback
     feedback = get_initial_feedback(analysis)
     print("\nInitial Feedback:")
     print(feedback)
     
-    # Start chat loop
     while True:
         user_input = input("\nYour question (or 'exit'/'analysis'): ").strip()
         
@@ -47,7 +40,6 @@ def chat_loop(analysis):
             print(json.dumps(analysis, indent=2))
             continue
         
-        # Get response from LLM
         response = client.chat.completions.create(
             model="gpt-4.1-mini",
             messages=[

@@ -1,9 +1,9 @@
 <template>
   <div 
     :class="[
-      'analysis-panel rounded-xl p-6 backdrop-blur-sm transition-all duration-300',
+      'analysis-panel rounded-lg p-6 backdrop-blur-sm transition-all duration-300',
       'border shadow-lg',
-      'bg-card border-default text-primary'
+      'bg-card border-border text-primary'
     ]"
   >
     <div class="space-y-6">

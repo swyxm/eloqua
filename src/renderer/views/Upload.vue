@@ -1,20 +1,21 @@
 <template>
-  <div class="min-h-screen p-8 font-sans overflow-auto">
-    <div class="max-w-7xl mx-auto space-y-8">
+  <div class="min-h-screen font-sans overflow-auto bg-bg text-primary">
+
       <header class="text-center mb-8">
         <h1 class="text-5xl font-extrabold text-primary mb-2 tracking-tight">Eloqua</h1>
         <p class="text-secondary text-lg">Your AI Debate Coach</p>
       </header>
 
-      <div class="bg-card backdrop-blur-md rounded-xl shadow-xl p-8 border border-default transform transition-all duration-300 hover:scale-[1.01]">
+      <div class="max-w-5xl mx-auto">
+        <div class="bg-card rounded-lg shadow-xl p-8 border border-border">
         <h2 class="text-2xl text-center font-bold text-primary mb-6">Upload Speech</h2>
-        <div class="space-y-6">
+                  <div class="space-y-6">
           <FileUpload
             @file-selected="handleFileSelected"
             @file-removed="handleFileRemoved"
           />
           
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label class="form-label">Debate Motion <span class="text-red-500">*</span></label>
               <div class="relative">
@@ -22,12 +23,12 @@
                   v-model="motion"
                   type="text"
                   required
-                  class="form-input"
-                  placeholder="e.g., This House believes in universal basic income"
-                  @focus="showMotionSuggestions = true"
+                  class="form-input h-11"
+                  placeholder="e.g., THB in universal basic income"
+                  @focus="showMotionSuggestions = false"
                 />
                 <div v-if="showMotionSuggestions && recentMotions.length > 0" 
-                     class="absolute z-10 w-full mt-1 bg-surface rounded-lg shadow-lg border border-default">
+                     class="absolute z-10 w-full mt-1 bg-surface rounded-md shadow-lg border border-border">
                   <div v-for="m in recentMotions" 
                        :key="m"
                        @click="motion = m; showMotionSuggestions = false"
@@ -44,7 +45,7 @@
               <select
                 v-model="format"
                 required
-                class="form-input"
+                class="form-input h-11"
               >
                 <option value="">Select a format</option>
                 <option value="BP">British Parliamentary</option>
@@ -54,19 +55,24 @@
 
             <div>
               <label class="form-label">Date <span class="text-red-500">*</span></label>
-              <input
-                v-model="speechDate"
-                type="date"
-                required
-                class="form-input"
-                :max="new Date().toISOString().split('T')[0]"
-              />
+              <div class="relative">
+                <input
+                  v-model="speechDate"
+                  type="date"
+                  required
+                  class="form-input h-11"
+                  :max="new Date().toISOString().split('T')[0]"
+                />
+              </div>
             </div>
 
-            <div>
-              <div class="bg-surface-hover rounded-xl p-4">
-                <label class="form-label mb-3">Round Type <span class="text-red-500">*</span></label>
-                <div class="flex flex-col space-y-4">
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            <div class="lg:col-span-4">
+              <div class="bg-surface-hover rounded-lg p-4 h-full">
+                <label class="form-label mb-3 text-md">Round Type <span class="text-red-500">*</span></label>
+                <div class="flex flex-col space-y-3">
                   <div class="flex flex-col space-y-2">
                     <label class="inline-flex items-center cursor-pointer">
                       <input type="radio" v-model="roundType" value="practice" class="hidden">
@@ -95,7 +101,7 @@
                         @focus="showTournamentSuggestions = true"
                       />
                       <div v-if="showTournamentSuggestions && tournamentSuggestions.length > 0" 
-                           class="absolute z-10 w-full mt-1 bg-surface rounded-lg shadow-lg border-default">
+                           class="absolute z-10 w-full mt-1 bg-surface rounded-md shadow-lg border-border">
                         <div v-for="tournament in tournamentSuggestions" 
                              :key="tournament.id"
                              @click="tournamentName = tournament.name; showTournamentSuggestions = false"
@@ -103,7 +109,6 @@
                           {{ tournament.name }}
                         </div>
                       </div>
-                      
                     </div>
                     <div>
                       <select v-model="roundNumber" class="form-input py-1.5 text-sm">
@@ -120,33 +125,35 @@
                 </div>
               </div>
             </div>
-          </div>
-
-          <div v-if="format" class="space-y-6">
-            <div>
-              <label class="form-label">Your Position <span class="text-red-500">*</span></label>
-              <select v-model="position" required class="form-input">
-                <option value="">Select your position</option>
-                <option v-for="pos in debatePositions" :key="pos" :value="pos">{{ pos }}</option>
-              </select>
-            </div>
-
-            <div>
-              <label class="form-label">Place in Round (Optional)</label>
-              <div class="grid gap-3" :class="{ 'grid-cols-2 lg:grid-cols-4': format === 'BP', 'grid-cols-2 justify-center': format === 'WSDC' }">
-                <button
-                  v-for="place in roundPlacements" 
-                  :key="place.value"
-                  @click="rank = place.value"
-                  class="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 bg-surface text-secondary hover:bg-surface-hover hover:border-accent transition-all duration-200 ease-in-out"
-                  :class="{ 'bg-accent border-accent text-white shadow-lg': rank === place.value }"
-                >
-                  <component :is="place.iconComponent" class="w-5 h-5" />
-                  <span>{{ place.label }}</span>
-                </button>
+            <div class="lg:col-span-8">
+              <div class="bg-surface-hover rounded-lg p-4 h-full flex flex-col gap-3">
+                <div>
+                  <label class="form-label">Your Position <span class="text-red-500">*</span></label>
+                  <select v-model="position" required class="form-input h-11">
+                    <option value="">Select your position</option>
+                    <option v-for="pos in debatePositions" :key="pos" :value="pos">{{ pos }}</option>
+                  </select>
+                </div>
+                <div v-if="roundType === 'tournament'">
+                  <label class="form-label">Place in Round (Optional)</label>
+                  <div class="grid gap-2" :class="{ 'grid-cols-2 lg:grid-cols-4': format === 'BP', 'grid-cols-2 justify-center': format === 'WSDC' }">
+                    <button
+                      v-for="place in roundPlacements" 
+                      :key="place.value"
+                      @click="rank = place.value"
+                      class="flex items-center justify-center text-sm gap-2 py-2 rounded-md transition-all duration-200 ease-in-out border-2"
+                      :class="rank === place.value ? 'bg-accent border-accent text-white shadow-lg scale-105' : 'bg-surface/60 border-surface-hover text-secondary hover:bg-surface hover:border-accent/40'"
+                    >
+                      <component :is="components[place.iconComponent]" class="w-4 h-4" />
+                      <span>{{ place.label }}</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
+          <div class="space-y-6">
             <div>
               <label class="form-label">Specific Feedback (Optional)</label>
               <textarea
@@ -179,6 +186,13 @@ import { useRouter } from 'vue-router';
 import { store } from '../store.js';
 import FileUpload from '../components/FileUpload.vue';
 import { ChevronsUp, ChevronUp, ChevronDown, ChevronsDown } from 'lucide-vue-next';
+
+const components = {
+  ChevronsUp,
+  ChevronUp,
+  ChevronDown,
+  ChevronsDown
+};
 import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client
@@ -237,15 +251,15 @@ const debatePositions = computed(() => {
 const roundPlacements = computed(() => {
   if (format.value === 'BP') {
     return [
-      { label: 'First Place', value: 'First Place', iconComponent: ChevronsUp },
-      { label: 'Second Place', value: 'Second Place', iconComponent: ChevronUp },
-      { label: 'Third Place', value: 'Third Place', iconComponent: ChevronDown },
-      { label: 'Fourth Place', value: 'Fourth Place', iconComponent: ChevronsDown }
+      { label: 'First Place', value: 'First Place', iconComponent: 'ChevronsUp' },
+      { label: 'Second Place', value: 'Second Place', iconComponent: 'ChevronUp' },
+      { label: 'Third Place', value: 'Third Place', iconComponent: 'ChevronDown' },
+      { label: 'Fourth Place', value: 'Fourth Place', iconComponent: 'ChevronsDown' }
     ];
   } else if (format.value === 'WSDC') {
     return [
-      { label: 'Won Round', value: 'Won Round', iconComponent: ChevronsUp },
-      { label: 'Lost Round', value: 'Lost Round', iconComponent: ChevronsDown }
+      { label: 'Won Round', value: 'Won Round', iconComponent: 'ChevronsUp' },
+      { label: 'Lost Round', value: 'Lost Round', iconComponent: 'ChevronsDown' }
     ];
   } else {
     return [];
@@ -261,6 +275,7 @@ watch(roundType, (newType) => {
   if (newType === 'practice') {
     tournamentName.value = '';
     roundNumber.value = '';
+    rank.value = '';
   }
 });
 
@@ -343,11 +358,11 @@ const handleAnalyze = async () => {
       motion: motion.value,
       format: format.value,
       position: position.value,
+      placeInRound: rank.value || null,
       specificFeedback: specificFeedback.value,
     };
 
     const analysisResult = await window.electron.ipcRenderer.invoke('analyze-speech', payload);
-
     const tournamentId = await getTournamentId(tournamentName.value);
 
     const speechData = {
@@ -358,7 +373,13 @@ const handleAnalyze = async () => {
       position: position.value,
       motion: motion.value,
       audio_path: selectedFile.value.name, 
-      analysis_result: analysisResult,
+      analysis_result: {
+        transcript: analysisResult.transcript,
+        duration_seconds: analysisResult.duration_seconds,
+        transcript_stats: analysisResult.transcript_stats,
+        prosody_stats: analysisResult.prosody_stats
+      },
+      llm_analysis: analysisResult.llm_analysis,
       speech_date: speechDate.value,
     };
 
@@ -384,6 +405,12 @@ const handleAnalyze = async () => {
 
   } catch (error) {
     console.error('Analysis or save error:', error);
+    console.error('Error details:', {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+      hint: error.hint
+    });
     // TODO: Show an error message to the user in the UI
   } finally {
     isLoading.value = false;

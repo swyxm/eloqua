@@ -7,8 +7,9 @@ import sys
 import os
 import ssl
 import urllib.request
+import requests
+from dotenv import load_dotenv
 
-# transcription
 def transcribe(audio_path, pre_text=None, pre_duration=None):
     if pre_text is not None and pre_duration is not None:
         return pre_text, pre_duration
@@ -27,15 +28,13 @@ def transcribe(audio_path, pre_text=None, pre_duration=None):
     if 'segments' in r and r['segments']:
         duration = max(segment['end'] for segment in r['segments'])
     else:
-        # fallback: calculate from audio file
         audio = whisper.load_audio(audio_path)
-        duration = len(audio) / 16000  # 16kHz sample rate
+        duration = len(audio) / 16000  
     
     return r["text"], duration
 
 
 
-# extracting audio features w/ opensmile
 def extract_characteristics(audio_path):
     smile = opensmile.Smile(
         feature_set=opensmile.FeatureSet.eGeMAPSv02,
@@ -52,85 +51,123 @@ def analyze_transcript(text):
     return {"sentences": sentences, "word_count": word_count}
 
 
-# prompt
-def prompt(transcript, features, duration, motion, format, position, place_in_round=None, specific_feedback=None):
+def get_system_prompt():
+    return """You are a world-class debate coach. Analyze debate speeches and provide scores with detailed feedback.
 
-    #dict for score scales // update as format support increases
-    speaker_score = {
-        "BP": """
-        Scoring Guide (British Parliamentary):
-        - 85: Practically perfect speech
-        - 80–83: Very strong speaker
-        - 77–80: Above average
-        - 74–76: Average
-        - 70–73: Below average / weak speech
-        """,
-        "WSDC": """
-        Scoring Guide (World Schools):
-        - 74–75: Practically perfect speech
-        - 71–73: Very strong speaker
-        - 68–70: Above average
-        - Below 68: Developing / needs improvement
-        """
-    }[format]
+SCORING GUIDELINES:
+- British Parliamentary (BP): 85=perfect, 80-83=strong, 77-80=above avg, 74-76=avg, 70-73=below avg
+- World Schools (WSDC): 74-75=perfect, 71-73=strong, 68-70=above avg, <68=developing
 
-    context_info = ""
-    if position:
-        context_info += f"\nSpeaker Position: {position}"
-    if place_in_round:
-        context_info += f"\nPlace in Round: {place_in_round}"
-    if specific_feedback:
-        context_info += f"\nSpecific Feedback Requested: {specific_feedback}"
-
-    return f"""
-You are a world class debate coach familiar in two major debating formats, including British Parliamentary Debate (5:30 minute speeches), 
-World Schools Debate (8-9 min speeches).
-
-This speaker's speech duration was {duration}.
-{context_info}
-
-Here is the delivery analysis for a debater:
-
-Definitions:
+PROSODY CONTEXT (use to guide feedback, but don't explicitly mention numbers):
 - Pitch stddev: ideal = 0.15–0.4 (lower = monotone, higher = unstable)
 - Volume mean: ideal = 1.5–3.5
 - Jitter: ideal = 0.01–0.04 (higher = shaky voice)
 - Voiced segments/sec: ideal = 1.3–2.0 (higher = rushed, lower = slow)
 
-Speaker Profile:
-- Pitch StdDev: {features['F0semitoneFrom27.5Hz_sma3nz_stddevNorm']:.2f}
-- Volume Mean: {features['loudness_sma3_amean']:.2f}
-- Jitter: {features['jitterLocal_sma3nz_amean']:.4f}
-- Voiced Segments/sec (Pace): {features['VoicedSegmentsPerSec']:.2f}
+FEEDBACK STRUCTURE (always use this exact format with markdown):
+# Intro thoughts
 
-Debate Motion:
-{motion}
+## Content Analysis:
 
-Transcript:
-\"\"\"{transcript}\"\"\"
+## Delivery Feedback:
 
-Speaker Score System: {speaker_score}
+## Role-Specific Advice (Position):
 
-Your feedback must focus on two things:
-1. Critically dissecting and analyzing how well the speaker addressed the motion and structured their arguments. 
-What was missing? What could make the content stronger. Suggest any pieces of knowledge relevant to the motion that they can add to their argument toolkit. 
-Suggest preemptive refutation or ways to mitigate the opposing bench based on their position as a speaker. 
-Tailor your criticism on whether they are a content role or a refutation role (i.e Prime Minister vs. Deputy Prime Minister in British Parliamentary).
-For Whip speakers, suggest forms of weighing. If their case was completely flawed, suggest what you think is the strongest case and articulate why.
+ANALYSIS REQUIREMENTS:
+1. Content Analysis: How well they addressed the motion, argument structure, missing elements, knowledge gaps
+2. Delivery Feedback: Prosody improvements while playing to their natural speaking style
+3. Role-Specific Advice: Tailor feedback to their position (PM vs DPM, Whip vs Extension, etc.)
 
-2. Give feedback on their speaker profile. How can they improve the way they speak to sound more engaging, passionate, etc. But play to their strengths. 
-If the speaker has a generally quieter register, there is no point in forcing them to speak much louder. Rather tailor your feedback within their realm.
+Return JSON: {"score": number, "feedback": "detailed analysis in markdown format"}"""
 
-Please return your result in this exact JSON format:
-{{
-  "score": <speaker_score>,
-  "feedback": "<thorough paragraph explanation>"
-}}
+def get_user_prompt(transcript, features, duration, motion, format, position, place_in_round=None, specific_feedback=None):
+    context_info = ""
+    if position:
+        context_info += f"Position: {position}"
+    if place_in_round:
+        context_info += f" | Place: {place_in_round}"
+    if specific_feedback:
+        context_info += f" | Focus: {specific_feedback}"
+    
+    return f"""ANALYZE THIS {format} DEBATE SPEECH:
 
-Only return JSON. Do not include extra commentary or prefixes.
-"""
+Motion: {motion}
+{context_info}
+Duration: {duration:.1f}s
+
+Prosody Analysis:
+- Pitch: {features['F0semitoneFrom27.5Hz_sma3nz_stddevNorm']:.2f} (ideal: 0.15-0.4)
+- Volume: {features['loudness_sma3_amean']:.2f} (ideal: 1.5-3.5)
+- Jitter: {features['jitterLocal_sma3nz_amean']:.4f} (ideal: 0.01-0.04)
+- Pace: {features['VoicedSegmentsPerSec']:.2f} (ideal: 1.3-2.0)
+
+Transcript: {transcript}"""
+
+def call_gemini_api(system_prompt, user_prompt):
+    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+    GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent'
+    
+    if not GEMINI_API_KEY:
+        print("Warning: GEMINI_API_KEY not found in environment variables")
+        return {"error": "API key not configured"}
+    
+    headers = {
+        'Content-Type': 'application/json',
+    }
+    
+    combined_prompt = f"{system_prompt}\n\n{user_prompt}"
+    
+    data = {
+        "contents": [{
+            "parts": [{
+                "text": combined_prompt
+            }]
+        }],
+        "generationConfig": {
+            "temperature": 0.7,
+            "topK": 40,
+            "topP": 0.95,
+            "maxOutputTokens": 8192,
+        }
+    }
+    
+    try:
+        response = requests.post(
+            f"{GEMINI_API_URL}?key={GEMINI_API_KEY}",
+            headers=headers,
+            json=data,
+            timeout=60
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            if 'candidates' in result and len(result['candidates']) > 0:
+                generated_text = result['candidates'][0]['content']['parts'][0]['text']
+                try:
+                    return json.loads(generated_text)
+                except json.JSONDecodeError:
+                    import re
+                    json_match = re.search(r'```json\s*(\{.*?\})\s*```', generated_text, re.DOTALL)
+                    if json_match:
+                        try:
+                            return json.loads(json_match.group(1))
+                        except json.JSONDecodeError:
+                            pass
+                    
+                    return {"error": "Failed to parse JSON response", "raw_text": generated_text}
+            else:
+                return {"error": "No response generated", "details": result}
+        else:
+            return {"error": f"API call failed with status {response.status_code}", "details": response.text}
+            
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Request failed: {str(e)}"}
+    except Exception as e:
+        return {"error": f"Unexpected error: {str(e)}"}
 
 def main(audio_path, motion, format, position, place_in_round=None, specific_feedback=None):
+    load_dotenv()
+    
     format = format.upper()
     if format not in ["BP", "WSDC"]:
         print(f"Error: Unsupported format '{format}'. Supported formats are: BP, WSDC")
@@ -138,23 +175,27 @@ def main(audio_path, motion, format, position, place_in_round=None, specific_fee
     if not os.path.isfile(audio_path):
         print(f"Error: Audio file not found: {audio_path}")
         sys.exit(1)
+    
     transcript, duration = transcribe(audio_path)
-    prosody_df      = extract_characteristics(audio_path)
+    prosody_df = extract_characteristics(audio_path)
     transcript_stats = analyze_transcript(transcript)
     features = prosody_df.to_dict(orient="records")[0]
-    llm_prompt = prompt(transcript, features, duration, motion, format, position, place_in_round, specific_feedback)
-
+    
+    system_prompt = get_system_prompt()
+    user_prompt = get_user_prompt(transcript, features, duration, motion, format, position, place_in_round, specific_feedback)
+    
+    llm_analysis = call_gemini_api(system_prompt, user_prompt)
+    
     output = {
         "transcript": transcript,
         "duration_seconds": duration,
         "transcript_stats": transcript_stats,
         "prosody_stats": prosody_df.to_dict(orient="records")[0],
-        "llm_prompt": llm_prompt
+        "llm_analysis": llm_analysis
     }
     print(json.dumps(output, indent=2))
 
 if __name__=="__main__":
-    # Expected arguments: audio_path, motion, format, position, [place_in_round], [specific_feedback]
     if len(sys.argv) < 5:
         print("Usage: python speech_analyzer.py <audio_path> <motion> <format> <position> [place_in_round] [specific_feedback]")
         sys.exit(1)

@@ -10,10 +10,12 @@ initializeTheme();
 
 import Upload from './renderer/views/Upload.vue';
 import Dashboard from './renderer/views/Dashboard.vue';
+import SpeechDetail from './renderer/views/SpeechDetail.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Upload },
-  { path: '/dashboard', name: 'Dashboard', component: Dashboard }
+  { path: '/dashboard', name: 'Dashboard', component: Dashboard },
+  { path: '/speech/:id', name: 'SpeechDetail', component: SpeechDetail }
 ]
 
 const router = createRouter({

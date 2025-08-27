@@ -9,6 +9,7 @@ Eloqua is an intelligent debate speech analysis **desktop application** that hel
 - **🎤 Speech Recording & Upload**: Record or upload your debate speeches in various audio formats
 - **🤖 AI-Powered Analysis**: Uses OpenAI's Whisper models for accurate transcription and analysis
 - **📊 Performance Scoring**: Get detailed scores and feedback on your debate performance
+- **🎵 Prosody Analysis**: Advanced audio analysis including pitch, volume, jitter, and speaking pace metrics
 - **📈 Progress Tracking**: Visual timeline of your debate journey with statistics and trends
 - **🔍 Advanced Search**: Search through your speeches by motion, tournament, position, or metadata
 - **🏆 Tournament Management**: Organize speeches by tournaments and track your competitive record
@@ -60,15 +61,20 @@ Eloqua is an intelligent debate speech analysis **desktop application** that hel
    cp .env.example .env
    ```
    
-   Edit `.env` and add your Supabase credentials:
+   Edit `.env` and add your credentials:
    ```env
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   LLM_API_KEY=your_llm_api_key
    ```
 
-5. **Set up your own database (To run beta version for now)**
+5. **Set up your database**
    - Create a Supabase project at [supabase.com](https://supabase.com)
    - Run the SQL scripts in `database/schema.sql` to create the required tables
+   - The schema includes:
+     - `analysis_result` column (JSONB) for transcript, duration, and prosody data
+     - `llm_analysis` column (JSONB) for AI-generated scores and feedback
+     - `prosody_stats` column (JSONB) for detailed speech analysis metrics
 
 ### Running the Application
 
@@ -111,7 +117,8 @@ Eloqua is an intelligent debate speech analysis **desktop application** that hel
 4. **Get analysis**
    - Click "Analyze Speech" to process your audio
    - Wait for transcription and analysis (typically 1-3 minutes)
-   - Review your detailed feedback and score
+   - Review your detailed feedback, score, and prosody metrics
+   - Prosody analysis includes pitch variation, volume, jitter, and speaking pace
 
 ### Using the Dashboard
 

@@ -17,7 +17,7 @@
       </header>
 
       <!-- Session Info Summary -->
-      <div class="backdrop-blur-md rounded-xl shadow-lg p-6 border bg-card border-default">
+      <div class="backdrop-blur-md rounded-lg shadow-lg p-6 border bg-card border-border">
         <h3 class="text-xl font-semibold mb-4 text-primary">
           Session Information
         </h3>
@@ -67,7 +67,7 @@
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div class="analysis-section">
-          <div class="backdrop-blur-md rounded-xl shadow-xl p-8 border transform transition-all duration-300 hover:scale-[1.01] bg-card border-default">
+          <div class="backdrop-blur-md rounded-lg shadow-xl p-8 border transform transition-all duration-300 hover:scale-[1.01] bg-card border-border">
             <h2 class="text-2xl text-center font-bold mb-6 text-primary">
               Analysis Results
             </h2>
@@ -89,7 +89,7 @@
         </div>
 
         <div class="chat-section">
-          <div v-if="analysisData" class="backdrop-blur-md rounded-xl shadow-xl p-8 border transform transition-all duration-300 hover:scale-[1.01] min-h-[400px] flex flex-col bg-card border-default">
+          <div v-if="analysisData" class="backdrop-blur-md rounded-lg shadow-xl p-8 border transform transition-all duration-300 hover:scale-[1.01] min-h-[400px] flex flex-col bg-card border-border">
             <h2 class="text-2xl text-center font-bold mb-6 text-primary">
               Debate Coach Chat
             </h2>
@@ -124,7 +124,6 @@ onMounted(() => {
   analysisData.value = store.analysisData;
   sessionInfo.value = store.sessionData;
 
-  // Initial chat message if analysis data is present
   if (analysisData.value) {
     chatMessages.value.push({
       role: 'assistant',
@@ -139,9 +138,6 @@ const goBack = () => {
 
 const handleSendMessage = (message) => {
   chatMessages.value.push({ role: 'user', content: message });
-  // Here you would typically send the message to a backend/AI service
-  // and then receive a response.
-  // For this example, we'll just echo a simple response.
   setTimeout(() => {
     chatMessages.value.push({ 
       role: 'assistant', 
