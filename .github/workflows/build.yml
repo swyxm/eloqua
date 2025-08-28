@@ -59,6 +59,38 @@ jobs:
       with:
         path: artifacts
         
+    - name: Clean Up Existing Assets
+      uses: actions/github-script@v6
+      with:
+        script: |
+          try {
+            const release = await github.rest.repos.getReleaseByTag({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag: process.env.GITHUB_REF_NAME
+            });
+            
+            const assets = await github.rest.repos.listReleaseAssets({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: release.data.id
+            });
+            
+            for (const asset of assets.data) {
+              if (["locale.pak", "Electron Framework", "snapshot_blob.bin", "v8_context_snapshot.bin"].includes(asset.name)) {
+                console.log(`Deleting problematic asset: ${asset.name}`);
+                await github.rest.repos.deleteReleaseAsset({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  asset_id: asset.id
+                });
+              }
+            }
+            console.log('Asset cleanup completed');
+          } catch (error) {
+            console.log('No existing assets to clean up or cleanup failed:', error.message);
+          }
+        
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
