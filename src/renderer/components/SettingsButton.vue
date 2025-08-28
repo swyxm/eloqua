@@ -81,22 +81,41 @@
                 </p>
               </div>
 
-              <div>
-                <label class="block text-sm font-medium text-primary mb-2">
-                  Database Mode
-                </label>
-                <select
-                  v-model="workingSettings.databaseMode"
-                  class="w-full px-3 py-2 border border-border rounded-md bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                >
-                  <option value="local">Local Only (SQLite)</option>
-                  <option value="cloud">Cloud Sync (Supabase)</option>
-                  <option value="hybrid">Hybrid (Local + Cloud)</option>
-                </select>
-                <p class="text-xs text-muted mt-1">
-                  Choose how your data is stored and synced
-                </p>
-              </div>
+                              <div>
+                  <label class="block text-sm font-medium text-primary mb-2">
+                    Database Mode
+                  </label>
+                  <select
+                    v-model="workingSettings.databaseMode"
+                    class="w-full px-3 py-2 border border-border rounded-md bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    <option value="local">Local Only (SQLite)</option>
+                    <option value="cloud">Cloud Sync (Supabase)</option>
+                    <option value="hybrid">Hybrid (Local + Cloud)</option>
+                  </select>
+                  <p class="text-xs text-muted mt-1">
+                    Choose how your data is stored and synced
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-primary mb-2">
+                    Whisper Model
+                  </label>
+                  <select
+                    v-model="workingSettings.whisperModel"
+                    class="w-full px-3 py-2 border border-border rounded-md bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    <option value="tiny">Tiny (39 MB) - Fastest, least accurate</option>
+                    <option value="base">Base (74 MB) - Fast, good for basic transcription</option>
+                    <option value="small">Small (244 MB) - Balanced speed/accuracy</option>
+                    <option value="medium">Medium (769 MB) - Better accuracy, slower</option>
+                    <option value="large">Large (1550 MB) - Best accuracy, slowest</option>
+                  </select>
+                  <p class="text-xs text-muted mt-1">
+                    Choose the Whisper model for speech transcription. Larger models are more accurate but slower.
+                  </p>
+                </div>
 
               <div v-if="saveStatus" class="mt-2 text-center">
                 <p 
@@ -130,7 +149,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, inject } from 'vue'
 
 const showSettings = ref(false)
 
@@ -139,7 +158,8 @@ const workingSettings = reactive({
   geminiApiKey: '',
   supabaseUrl: '',
   supabaseAnonKey: '',
-  databaseMode: 'local'
+  databaseMode: 'local',
+  whisperModel: 'small'
 })
 
 // Watch for when settings modal opens and load saved settings
@@ -155,16 +175,39 @@ watch(showSettings, async (newValue) => {
 
 const saveSettings = async () => {
   try {
+    const prevSettings = await window.electron.ipcRenderer.invoke('get-settings')
+
     const settingsToSave = {
       geminiApiKey: workingSettings.geminiApiKey,
       supabaseUrl: workingSettings.supabaseUrl,
       supabaseAnonKey: workingSettings.supabaseAnonKey,
-      databaseMode: workingSettings.databaseMode
+      databaseMode: workingSettings.databaseMode,
+      whisperModel: workingSettings.whisperModel
     }
     
     const result = await window.electron.ipcRenderer.invoke('save-settings', settingsToSave)
     
     if (result.success) {
+      if (prevSettings?.whisperModel !== workingSettings.whisperModel) {
+        if (showModelInstall) showModelInstall(workingSettings.whisperModel)
+        
+        try {
+          const installResult = await window.electron.ipcRenderer.invoke('install-whisper-model', workingSettings.whisperModel)
+          
+          if (installResult.success) {
+            if (updateModelInstallProgress) updateModelInstallProgress(100)
+            setTimeout(() => {
+              if (hideModelInstall) hideModelInstall()
+            }, 1200)
+          } else {
+            console.error('Model installation failed:', installResult.error)
+            if (hideModelInstall) hideModelInstall()
+          }
+        } catch (error) {
+          console.error('Failed to install model:', error)
+          if (hideModelInstall) hideModelInstall()
+        }
+      }
       saveStatus.value = 'Settings saved successfully!'
       setTimeout(() => {
         saveStatus.value = ''
@@ -190,9 +233,21 @@ const resetWorkingSettings = () => {
   workingSettings.supabaseUrl = ''
   workingSettings.supabaseAnonKey = ''
   workingSettings.databaseMode = 'local'
+  workingSettings.whisperModel = 'small'
 }
 
 const saveStatus = ref('')
+
+const showModelInstall = inject('showModelInstall')
+const updateModelInstallProgress = inject('updateModelInstallProgress')
+const hideModelInstall = inject('hideModelInstall')
+
+if (window.electronAPI && typeof window.electronAPI.onWhisperInstallProgress === 'function') {
+  window.electronAPI.onWhisperInstallProgress(({ model, progress }) => {
+    if (updateModelInstallProgress) updateModelInstallProgress(progress)
+    if (progress >= 100 && hideModelInstall) hideModelInstall()
+  })
+}
 
 const loadSettings = async () => {
   try {
@@ -203,6 +258,7 @@ const loadSettings = async () => {
       workingSettings.supabaseUrl = savedSettings.supabaseUrl || ''
       workingSettings.supabaseAnonKey = savedSettings.supabaseAnonKey || ''
       workingSettings.databaseMode = savedSettings.databaseMode || 'local'
+      workingSettings.whisperModel = savedSettings.whisperModel || 'small'
       
       console.log('Loaded saved settings into working copy:', savedSettings)
     }

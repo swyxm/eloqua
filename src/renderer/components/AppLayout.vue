@@ -35,11 +35,41 @@
           <slot name="footer" />
         </div>
       </footer>
+      <ModelInstallNotification
+        :show="showModelInstallNotification"
+        :model-name="modelInstallModel"
+        :progress="modelInstallProgress"
+        @close="closeModelInstallNotification"
+      />
     </div>
   </template>
   
   <script setup>
+import { ref, provide } from 'vue'
 import ThemeToggle from './ThemeToggle.vue'
 import EloquaLogo from './EloquaLogo.vue'
 import SettingsButton from './SettingsButton.vue'
+import ModelInstallNotification from './ModelInstallNotification.vue'
+
+const showModelInstallNotification = ref(false)
+const modelInstallModel = ref('small')
+const modelInstallProgress = ref(0)
+
+const showModelInstall = (modelName) => {
+  modelInstallModel.value = modelName
+  modelInstallProgress.value = 0
+  showModelInstallNotification.value = true
+}
+
+const updateModelInstallProgress = (progress) => {
+  modelInstallProgress.value = progress
+}
+
+const closeModelInstallNotification = () => {
+  showModelInstallNotification.value = false
+}
+
+provide('showModelInstall', showModelInstall)
+provide('updateModelInstallProgress', updateModelInstallProgress)
+provide('hideModelInstall', closeModelInstallNotification)
 </script>

@@ -9,7 +9,8 @@ contextBridge.exposeInMainWorld('electron', {
         'analyze-speech', 
         'chat',
         'get-settings',
-        'save-settings'
+        'save-settings',
+        'install-whisper-model'
       ];
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, ...args);
@@ -24,5 +25,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   analyzeSpeech: (data) => ipcRenderer.invoke('analyze-speech', data),
   chat: (data) => ipcRenderer.invoke('chat', data),
   getSettings: () => ipcRenderer.invoke('get-settings'),
-  saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings)
+  saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
+  onWhisperInstallProgress: (cb) => {
+    ipcRenderer.removeAllListeners('whisper-install-progress')
+    ipcRenderer.on('whisper-install-progress', (_event, data) => cb?.(data))
+  }
 }); 
