@@ -89,12 +89,11 @@
                     v-model="workingSettings.databaseMode"
                     class="w-full px-3 py-2 border border-border rounded-md bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
-                    <option value="local">Local Only (SQLite)</option>
+                    <option value="local" disabled class="text-muted">Local Only (SQLite) - Coming Soon</option>
                     <option value="cloud">Cloud Sync (Supabase)</option>
-                    <option value="hybrid">Hybrid (Local + Cloud)</option>
                   </select>
                   <p class="text-xs text-muted mt-1">
-                    Choose how your data is stored and synced
+                    Cloud sync enables backup and cross-device access
                   </p>
                 </div>
 
@@ -153,22 +152,18 @@ import { ref, reactive, watch, inject } from 'vue'
 
 const showSettings = ref(false)
 
-// Working copy - what user types in the form
 const workingSettings = reactive({
   geminiApiKey: '',
   supabaseUrl: '',
   supabaseAnonKey: '',
-  databaseMode: 'local',
+  databaseMode: 'cloud',
   whisperModel: 'small'
 })
 
-// Watch for when settings modal opens and load saved settings
 watch(showSettings, async (newValue) => {
   if (newValue === true) {
-    // Modal is opening, load saved settings into working copy
     await loadSettings()
   } else {
-    // Modal is closing, reset working copy to empty
     resetWorkingSettings()
   }
 })
@@ -232,7 +227,7 @@ const resetWorkingSettings = () => {
   workingSettings.geminiApiKey = ''
   workingSettings.supabaseUrl = ''
   workingSettings.supabaseAnonKey = ''
-  workingSettings.databaseMode = 'local'
+  workingSettings.databaseMode = 'cloud'
   workingSettings.whisperModel = 'small'
 }
 
@@ -253,14 +248,11 @@ const loadSettings = async () => {
   try {
     const savedSettings = await window.electron.ipcRenderer.invoke('get-settings')
     if (savedSettings) {
-      // Load saved settings into working copy
       workingSettings.geminiApiKey = savedSettings.geminiApiKey || ''
       workingSettings.supabaseUrl = savedSettings.supabaseUrl || ''
       workingSettings.supabaseAnonKey = savedSettings.supabaseAnonKey || ''
-      workingSettings.databaseMode = savedSettings.databaseMode || 'local'
+      workingSettings.databaseMode = savedSettings.databaseMode || 'cloud'
       workingSettings.whisperModel = savedSettings.whisperModel || 'small'
-      
-      console.log('Loaded saved settings into working copy:', savedSettings)
     }
   } catch (error) {
     console.error('Failed to load settings:', error)

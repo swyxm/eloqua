@@ -10,8 +10,6 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 GEMINI_API_URL = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={GEMINI_API_KEY}'
 
 def call_gemini_api(messages):
-    """Call Gemini API with conversation history"""
-    # Convert messages to Gemini format
     contents = []
     for msg in messages:
         role = "user" if msg["role"] == "user" else "model"
@@ -83,13 +81,11 @@ COACHING GUIDELINES:
     for msg in conversation_history:
         messages.append(msg)
     
-    # Add current user message
     messages.append({"role": "user", "content": user_message})
     
     return call_gemini_api(messages)
 
 def main():
-    """Main function for command line usage"""
     if len(sys.argv) < 3:
         print("Usage: python debate_chat.py <speech_data_json> <user_message> [conversation_history_json]")
         sys.exit(1)
