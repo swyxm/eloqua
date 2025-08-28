@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS speeches (
     debate_format TEXT NOT NULL,
     position TEXT NOT NULL,
     motion TEXT NOT NULL,
+    partner TEXT,
     audio_path TEXT,
     speech_date DATE NOT NULL DEFAULT CURRENT_DATE,
     place_in_round TEXT,
@@ -37,12 +38,13 @@ CREATE INDEX IF NOT EXISTS idx_speeches_tournament_id ON speeches(tournament_id)
 CREATE INDEX IF NOT EXISTS idx_speeches_created_at ON speeches(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_speeches_debate_format ON speeches(debate_format);
 CREATE INDEX IF NOT EXISTS idx_speeches_position ON speeches(position);
+CREATE INDEX IF NOT EXISTS idx_speeches_partner ON speeches(partner);
 CREATE INDEX IF NOT EXISTS idx_speeches_speech_date ON speeches(speech_date);
 CREATE INDEX IF NOT EXISTS idx_speeches_place_in_round ON speeches(place_in_round);
 
--- Create full-text search index for motion and position
+-- Create full-text search index for motion, position, and partner
 CREATE INDEX IF NOT EXISTS idx_speeches_search ON speeches USING GIN (
-    to_tsvector('english', motion || ' ' || position || ' ' || COALESCE(place_in_round, ''))
+    to_tsvector('english', motion || ' ' || position || ' ' || COALESCE(partner, '') || ' ' || COALESCE(place_in_round, ''))
 );
 
 -- Enable Row Level Security
@@ -106,4 +108,4 @@ LEFT JOIN tournaments t ON s.tournament_id = t.id;
 GRANT USAGE ON SCHEMA public TO anon;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO anon;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon;
-GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO anon; 
+GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO anon;
