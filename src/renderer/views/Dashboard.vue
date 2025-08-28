@@ -30,7 +30,6 @@
           <div class="text-center mb-6">
             <div class="flex flex-col items-center space-y-4 mb-6">
               <div class="flex items-center space-x-3">
-                <EloquaLogo class="w-16 h-11" />
                 <h1 class="text-4xl font-semibold tracking-tight text-primary">
                   Your Speech Saga
                 </h1>
