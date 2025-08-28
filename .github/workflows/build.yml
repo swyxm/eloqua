@@ -67,3 +67,15 @@ jobs:
         prerelease: false
       env:
         GITHUB_TOKEN: ${{ github.token }}
+        
+    - name: Upload Assets with Delays
+      run: |
+        # Wait for release to be fully created
+        sleep 10
+        
+        # Upload each platform build with delays
+        for file in artifacts/*; do
+          echo "Uploading $file..."
+          gh release upload v${{ github.ref_name }} "$file" --clobber
+          sleep 15  # Wait 15 seconds between uploads
+        done
