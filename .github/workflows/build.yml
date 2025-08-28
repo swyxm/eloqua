@@ -114,6 +114,16 @@ jobs:
         prerelease: false
       env:
         GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Ensure Release Exists
+      run: |
+        set -e
+        echo "Ensuring release $GITHUB_REF_NAME exists..."
+        if ! gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+          gh release create "$GITHUB_REF_NAME" -t "Eloqua $GITHUB_REF_NAME" -n "Automated release"
+        fi
+      env:
+        GH_TOKEN: ${{ github.token }}
         
     - name: Upload Assets with Delays
       run: |
@@ -130,7 +140,7 @@ jobs:
           
           while [ $attempt -le $max_attempts ]; do
             echo "Attempt $attempt of $max_attempts for $file"
-            if gh release upload "v${GITHUB_REF_NAME}" "$file" --clobber; then
+            if gh release upload "${GITHUB_REF_NAME}" "$file" --clobber; then
               echo "Successfully uploaded $file"
               break
             else
