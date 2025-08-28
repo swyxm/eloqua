@@ -54,6 +54,7 @@
         "to": "python"
       }
     ],
+    "publish": null,
     "mac": {
       "target": "dmg",
       "icon": "build/icon.icns",
