@@ -94,7 +94,11 @@ out/
 # Build outputs
 dist/
 dist-electron/
-build/
+build/*
+!build/icon.icns
+!build/icon.ico
+!build/icon.png
+!build/icon.svg
 *.dmg
 *.exe
 *.AppImage
