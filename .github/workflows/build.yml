@@ -64,11 +64,24 @@ jobs:
       with:
         script: |
           try {
+            console.log('Starting asset cleanup...');
+            
+            // Check if we have the right permissions
+            if (!context.token) {
+              console.log('No token available, skipping cleanup');
+              return;
+            }
+            
             const release = await github.rest.repos.getReleaseByTag({
               owner: context.repo.owner,
               repo: context.repo.repo,
               tag: process.env.GITHUB_REF_NAME
             });
+            
+            if (!release.data) {
+              console.log('No release found, skipping cleanup');
+              return;
+            }
             
             const assets = await github.rest.repos.listReleaseAssets({
               owner: context.repo.owner,
@@ -76,6 +89,7 @@ jobs:
               release_id: release.data.id
             });
             
+            let cleanedCount = 0;
             for (const asset of assets.data) {
               if (["locale.pak", "Electron Framework", "snapshot_blob.bin", "v8_context_snapshot.bin"].includes(asset.name)) {
                 console.log(`Deleting problematic asset: ${asset.name}`);
@@ -84,17 +98,18 @@ jobs:
                   repo: context.repo.repo,
                   asset_id: asset.id
                 });
+                cleanedCount++;
               }
             }
-            console.log('Asset cleanup completed');
+            console.log(`Asset cleanup completed. Cleaned ${cleanedCount} assets.`);
           } catch (error) {
-            console.log('No existing assets to clean up or cleanup failed:', error.message);
+            console.log('Asset cleanup failed (non-critical):', error.message);
+            console.log('Continuing with release creation...');
           }
         
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: artifacts/**/*
         draft: false
         prerelease: false
       env:
@@ -105,9 +120,30 @@ jobs:
         # Wait for release to be fully created
         sleep 10
         
-        # Upload each platform build with delays
+        # Upload each platform build with delays and error handling
         for file in artifacts/*; do
           echo "Uploading $file..."
-          gh release upload v${{ github.ref_name }} "$file" --clobber
-          sleep 15  # Wait 15 seconds between uploads
+          
+          # Try upload with retry logic
+          max_attempts=3
+          attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts for $file"
+            
+            if gh release upload v${{ github.ref_name }} "$file" --clobber; then
+              echo "Successfully uploaded $file"
+              break
+            else
+              echo "Upload failed for $file, attempt $attempt"
+              if [ $attempt -eq $max_attempts ]; then
+                echo "Failed to upload $file after $max_attempts attempts"
+                exit 1  # Fail the build if upload fails
+              fi
+              attempt=$((attempt + 1))
+              sleep 30  # Wait longer between retries
+            fi
+          done
+          
+          sleep 15  # Wait between different files
         done
