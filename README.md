@@ -77,24 +77,7 @@ Eloqua is an intelligent debate speech analysis **desktop application** that hel
      - `llm_analysis` column (JSONB) for AI-generated scores and feedback
      - `prosody_stats` column (JSONB) for detailed speech analysis metrics
      - `chat_context` column (JSONB) for persistent AI coach conversation history
-
-### Running the Application
-
-1. **Start the Electron app**
-   ```bash
-   npm start
-   # or
-   yarn start
-   ```
-
-2. **The desktop application will open automatically**
-   - No browser needed - Eloqua runs as a native desktop app
-   - The app window will appear with the full interface
-
-3. **Start analyzing speeches!**
-   - Click "Record New Speech" to upload or record a debate speech
-   - Fill in the debate details (motion, format, position, etc.)
-   - Get instant AI-powered feedback and analysis
+     - `partner` column (TEXT) for optional partner name storage & related stats
 
 ## 📖 How to Use Eloqua
 
@@ -112,6 +95,7 @@ Eloqua is an intelligent debate speech analysis **desktop application** that hel
    - **Motion**: The debate topic you're speaking on
    - **Format**: Choose between BP or WSDC
    - **Position**: Your role in the debate (e.g., Prime Minister, First Speaker)
+   - **Partner**: Optional - your debate partner's name
    - **Date**: When the speech was given
    - **Tournament**: Optional tournament information
    - **Place in Round**: Your result (First Place, Second Place, etc.)
@@ -166,9 +150,26 @@ model = whisper.load_model("base")
 - First download may take 1-5 minutes depending on model size and then you're chilling after that.
 - Models are cached after first download
 
-## 🚀 Building & Distribution
+## 🚀 Running/Building the Application
 
-### Prerequisites for Building
+1. **Start the Electron app**
+   ```bash
+   npm start
+   # or
+   yarn start
+   ```
+
+2. **The desktop application will open automatically**
+   - No browser needed - Eloqua runs as a native desktop app
+   - The app window will appear with the full interface
+
+3. **Start analyzing speeches!**
+   - Click "Record New Speech" to upload or record a debate speech
+   - Fill in the debate details (motion, format, position, etc.)
+   - Get instant AI-powered feedback and analysis
+
+## Or you can install the package directly!
+### Prerequisites for Building:
 
 - **macOS**: Xcode Command Line Tools (`xcode-select --install`)
 - **Windows**: Visual Studio Build Tools
@@ -190,27 +191,7 @@ npm run electron:dist
 ./build.sh
 ```
 
-### Build Outputs
-
-After building, check the `dist-electron/` folder for:
-- **macOS**: `.dmg` file
-- **Windows**: `.exe` installer
-- **Linux**: `.AppImage` file
-
-### Automated Builds with GitHub Actions
-
-1. **Push a tag** to trigger automatic builds:
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
-
-2. **GitHub Actions will automatically**:
-   - Build for all platforms (macOS, Windows, Linux)
-   - Create a release with all platform builds
-   - Upload installable packages
-
-### Manual Release Process
+### Manual Release Process (Safest for Mac Users)
 
 1. **Build locally**: `npm run electron:dist`
 2. **Go to GitHub**: Repo → Releases → "Create a new release"
