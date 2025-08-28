@@ -139,17 +139,17 @@ function registerIpcHandlers() {
         pythonScript = path.join(__dirname, 'src', 'main', 'python', 'model_manager.py');
       }
       
-      let pythonExecutable = 'python3';
-      if (app.isPackaged) {
-        if (process.platform === 'win32') {
-          pythonExecutable = 'python';
-        } else if (process.platform === 'darwin') {
-          pythonExecutable = 'python3';
+      let pythonExecutable = process.env.PYTHON_EXECUTABLE;
+      if (!pythonExecutable) {
+        if (app.isPackaged) {
+          if (process.platform === 'win32') {
+            pythonExecutable = 'python';
+          } else {
+            pythonExecutable = 'python3';
+          }
         } else {
-          pythonExecutable = 'python3';
+          pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
         }
-      } else {
-        pythonExecutable = '/Library/Frameworks/Python.framework/Versions/3.12/bin/python3';
       }
       
       if (!require('fs').existsSync(pythonScript)) {
@@ -219,17 +219,17 @@ function registerIpcHandlers() {
         pythonScript = path.join(__dirname, 'src', 'main', 'python', 'transcribe.py');
       }
       
-      let pythonExecutable = 'python3';
-      if (app.isPackaged) {
-        if (process.platform === 'win32') {
-          pythonExecutable = 'python';
-        } else if (process.platform === 'darwin') {
-          pythonExecutable = 'python3';
+      let pythonExecutable = process.env.PYTHON_EXECUTABLE;
+      if (!pythonExecutable) {
+        if (app.isPackaged) {
+          if (process.platform === 'win32') {
+            pythonExecutable = 'python';
+          } else {
+            pythonExecutable = 'python3';
+          }
         } else {
-          pythonExecutable = 'python3';
+          pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
         }
-      } else {
-        pythonExecutable = '/Library/Frameworks/Python.framework/Versions/3.12/bin/python3';
       }
       
       if (!require('fs').existsSync(pythonScript)) {

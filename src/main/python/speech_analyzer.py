@@ -10,7 +10,7 @@ import urllib.request
 import requests
 from dotenv import load_dotenv
 
-def transcribe(audio_path, pre_text=None, pre_duration=None):
+def transcribe(audio_path, pre_text=None, pre_duration=None, model_name=None):
     if pre_text is not None and pre_duration is not None:
         return pre_text, pre_duration
     
@@ -18,7 +18,8 @@ def transcribe(audio_path, pre_text=None, pre_duration=None):
     ssl._create_default_https_context = ssl._create_unverified_context
     
     try:
-        model = whisper.load_model("small")
+        selected_model = model_name or os.getenv("WHISPER_MODEL", "small")
+        model = whisper.load_model(selected_model)
     finally:
         ssl._create_default_https_context = original_context
     
@@ -190,7 +191,8 @@ def main(audio_path, motion, format, position, place_in_round=None, specific_fee
         print(f"Error: Audio file not found: {audio_path}")
         sys.exit(1)
     
-    transcript, duration = transcribe(audio_path)
+    whisper_model = os.getenv("WHISPER_MODEL", "small")
+    transcript, duration = transcribe(audio_path, model_name=whisper_model)
     prosody_df = extract_characteristics(audio_path)
     transcript_stats = analyze_transcript(transcript)
     features = prosody_df.to_dict(orient="records")[0]

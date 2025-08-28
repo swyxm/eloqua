@@ -33,10 +33,9 @@ class DebateCoachService {
         return;
       }
       
-      let pythonExecutable = '/Library/Frameworks/Python.framework/Versions/3.12/bin/python3';
-      
-      if (!fs.existsSync(pythonExecutable)) {
-        pythonExecutable = 'python3';
+      let pythonExecutable = process.env.PYTHON_EXECUTABLE;
+      if (!pythonExecutable) {
+        pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
       }
       
       const env = { 

@@ -5,12 +5,12 @@ import json
 import ssl
 import whisper
 
-def transcribe(audio_path):
+def transcribe(audio_path, model_name="small"):
     original_context = ssl._create_default_https_context
     ssl._create_default_https_context = ssl._create_unverified_context
     
     try:
-        model = whisper.load_model("small")
+        model = whisper.load_model(model_name)
     finally:
         ssl._create_default_https_context = original_context
     
@@ -25,13 +25,13 @@ def transcribe(audio_path):
     return r["text"], duration
 
 
-def main(audio_path):
+def main(audio_path, model_name="small"):
     try:
         if not os.path.isfile(audio_path):
             print(f"fnf: {audio_path}", file=sys.stderr)
             sys.exit(1)
                 
-        transcript, duration = transcribe(audio_path)
+        transcript, duration = transcribe(audio_path, model_name)
         
         output = {
             "transcript": transcript,
@@ -48,8 +48,9 @@ if __name__ == "__main__":
         if len(sys.argv) < 2:
             sys.exit(1)
         
-        audio_path = sys.argv[1]        
-        main(audio_path)
+        audio_path = sys.argv[1]
+        model_name = sys.argv[2] if len(sys.argv) > 2 else os.getenv("WHISPER_MODEL", "small")
+        main(audio_path, model_name)
         
     except Exception as e:
         print(f"Fatal error: {e}", file=sys.stderr)
