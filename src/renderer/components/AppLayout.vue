@@ -14,7 +14,7 @@
   
             <nav class="flex items-center space-x-4">
               <slot name="navigation" />
-              
+              <SettingsButton />
               <ThemeToggle />
             </nav>
           </div>
@@ -41,4 +41,5 @@
   <script setup>
 import ThemeToggle from './ThemeToggle.vue'
 import EloquaLogo from './EloquaLogo.vue'
+import SettingsButton from './SettingsButton.vue'
 </script>

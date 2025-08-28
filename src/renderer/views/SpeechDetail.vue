@@ -410,23 +410,24 @@ const parseFeedback = (feedback) => {
   
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim()
+    const lower = line.toLowerCase()
     
     if (line.startsWith('# ')) {
       currentSection = 'introThoughts'
       currentContent = []
-    } else if (line.startsWith('### Content Analysis:')) {
+    } else if (/^##+\s+content analysis:?$/i.test(line)) {
       if (currentContent.length > 0) {
         sections[currentSection] = currentContent.join('\n').trim()
       }
       currentSection = 'contentAnalysis'
       currentContent = []
-    } else if (line.startsWith('### Delivery Feedback:')) {
+    } else if (/^##+\s+delivery feedback:?$/i.test(line)) {
       if (currentContent.length > 0) {
         sections[currentSection] = currentContent.join('\n').trim()
       }
       currentSection = 'deliveryFeedback'
       currentContent = []
-    } else if (line.startsWith('### Role-Specific Advice')) {
+    } else if (/^##+\s+role-?specific advice/i.test(line)) {
       if (currentContent.length > 0) {
         sections[currentSection] = currentContent.join('\n').trim()
       }

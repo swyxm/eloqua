@@ -64,7 +64,7 @@ PROSODY CONTEXT (use to guide feedback, but don't explicitly mention numbers):
 - Jitter: ideal = 0.01–0.04 (higher = shaky voice)
 - Voiced segments/sec: ideal = 1.3–2.0 (higher = rushed, lower = slow)
 
-FEEDBACK STRUCTURE (always use this exact format with markdown):
+FEEDBACK STRUCTURE (always use this exact markdown format inside the feedback field):
 # Intro thoughts
 
 ## Content Analysis:
@@ -78,7 +78,9 @@ ANALYSIS REQUIREMENTS:
 2. Delivery Feedback: Prosody improvements while playing to their natural speaking style
 3. Role-Specific Advice: Tailor feedback to their position (PM vs DPM, Whip vs Extension, etc.)
 
-Return JSON: {"score": number, "feedback": "detailed analysis in markdown format"}"""
+IMPORTANT: The response structure is JSON, but the feedback content should be rich markdown with headers, lists, bold text, etc. for proper frontend rendering.
+
+Return JSON: {"score": number, "feedback": "detailed analysis with markdown formatting (headers, lists, bold, etc.)"}"""
 
 def get_user_prompt(transcript, features, duration, motion, format, position, place_in_round=None, specific_feedback=None):
     context_info = ""
@@ -128,6 +130,21 @@ def call_gemini_api(system_prompt, user_prompt):
             "topK": 40,
             "topP": 0.95,
             "maxOutputTokens": 8192,
+            "response_mime_type": "application/json",
+            "response_schema": {
+                "type": "object",
+                "properties": {
+                    "score": {
+                        "type": "integer",
+                        "description": "Numerical score for the debate speech"
+                    },
+                    "feedback": {
+                        "type": "string",
+                        "description": "Detailed analysis and feedback in markdown format"
+                    }
+                },
+                "required": ["score", "feedback"]
+            }
         }
     }
     
@@ -143,18 +160,15 @@ def call_gemini_api(system_prompt, user_prompt):
             result = response.json()
             if 'candidates' in result and len(result['candidates']) > 0:
                 generated_text = result['candidates'][0]['content']['parts'][0]['text']
+                
+                # With structured output, the response should be pure JSON
                 try:
                     return json.loads(generated_text)
-                except json.JSONDecodeError:
-                    import re
-                    json_match = re.search(r'```json\s*(\{.*?\})\s*```', generated_text, re.DOTALL)
-                    if json_match:
-                        try:
-                            return json.loads(json_match.group(1))
-                        except json.JSONDecodeError:
-                            pass
-                    
-                    return {"error": "Failed to parse JSON response", "raw_text": generated_text}
+                except json.JSONDecodeError as e:
+                    return {
+                        "error": f"JSON parsing failed: {str(e)}", 
+                        "raw_text": generated_text
+                    }
             else:
                 return {"error": "No response generated", "details": result}
         else:

@@ -368,7 +368,11 @@ const handleAnalyze = async () => {
       specificFeedback: specificFeedback.value,
     };
 
-    const analysisResult = await window.electron.ipcRenderer.invoke('analyze-speech', payload);
+    const analysisResponse = await window.electron.ipcRenderer.invoke('analyze-speech', payload);
+    if (!analysisResponse || analysisResponse.success !== true || !analysisResponse.result) {
+      throw new Error(analysisResponse?.error || 'Analysis failed');
+    }
+    const analysisResult = analysisResponse.result;
     const tournamentId = await getTournamentId(tournamentName.value);
 
     const speechData = {

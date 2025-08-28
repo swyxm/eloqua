@@ -1,9 +1,14 @@
 const { spawn } = require('child_process');
 const path = require('path');
+const { app } = require('electron');
 
 class SpeechAnalyzer {
   constructor() {
-    this.scriptPath = path.join(__dirname, '../../../main/python/speech_analyzer.py');
+    if (app && app.isPackaged) {
+      this.scriptPath = path.join(process.resourcesPath, 'python', 'speech_analyzer.py');
+    } else {
+      this.scriptPath = path.join(__dirname, '..', 'python', 'speech_analyzer.py');
+    }
   }
 
   async analyze(audioPath, motion, format, position, placeInRound, specificFeedback) {
@@ -23,7 +28,20 @@ class SpeechAnalyzer {
         pythonArgs.push(specificFeedback);
       }
 
-      const pythonProcess = spawn('python3', pythonArgs);
+      const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
+
+      console.log('Launching Python for analysis:', {
+        pythonExecutable,
+        scriptPath: this.scriptPath,
+        audioPath,
+        motion,
+        format,
+        position,
+        placeInRound,
+        specificFeedback: Boolean(specificFeedback)
+      });
+
+      const pythonProcess = spawn(pythonExecutable, pythonArgs);
 
       let output = '';
       let error = '';
@@ -38,35 +56,47 @@ class SpeechAnalyzer {
 
       pythonProcess.on('close', (code) => {
         console.log('Python process closed with code:', code);
-        console.log('Python stdout:', output);
-        console.log('Python stderr:', error);
+        if (error) console.error('Python stderr:', error);
+        if (output) console.log('Python stdout (tail):', output.split('\n').slice(-5).join('\n'));
         
         if (code === 0) {
           try {
-            // Try to find the last valid JSON in the output
-            const lines = output.trim().split('\n');
-            let jsonOutput = '';
+            try {
+              const analysis = JSON.parse(output.trim());
+              resolve(analysis);
+              return;
+            } catch (_) {
+            }
             
-            // Look for the last line that contains valid JSON
+            const outputStr = output.trim();
+            const jsonStart = outputStr.lastIndexOf('{');
+            const jsonEnd = outputStr.lastIndexOf('}');
+            
+            if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+              const jsonStr = outputStr.substring(jsonStart, jsonEnd + 1);
+              try {
+                const analysis = JSON.parse(jsonStr);
+                resolve(analysis);
+                return;
+              } catch (e) {
+                console.error('Failed to parse extracted JSON:', e);
+              }
+            }
+            
+            const lines = output.trim().split('\n');
             for (let i = lines.length - 1; i >= 0; i--) {
               const line = lines[i].trim();
               if (line && line.startsWith('{') && line.endsWith('}')) {
                 try {
-                  const parsed = JSON.parse(line);
-                  jsonOutput = line;
-                  break;
-                } catch (e) {
-                  // Continue to next line
+                  const analysis = JSON.parse(line);
+                  resolve(analysis);
+                  return;
+                } catch (_) {
                 }
               }
             }
             
-            if (jsonOutput) {
-              const analysis = JSON.parse(jsonOutput);
-              resolve(analysis);
-            } else {
-              reject(new Error('No valid JSON found in output'));
-            }
+            reject(new Error('No valid JSON found in output'));
           } catch (e) {
             console.error('JSON parsing error:', e);
             reject(new Error(`Failed to parse analysis output: ${e.message}`));
@@ -74,6 +104,10 @@ class SpeechAnalyzer {
         } else {
           reject(new Error(`Analysis failed with code ${code}: ${error}`));
         }
+      });
+
+      pythonProcess.on('error', (err) => {
+        reject(new Error(`Failed to start Python process: ${err.message}`));
       });
     });
   }

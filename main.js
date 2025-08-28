@@ -35,6 +35,60 @@ const fileService = {
   }
 };
 
+const Store = require('electron-store');
+const store = new Store({
+  name: 'eloqua-settings',
+  encryptionKey: 'eloqua-secure-key',
+});
+
+const loadSettingsToEnv = () => {
+  try {
+    const geminiApiKey = store.get('geminiApiKey');
+    const supabaseUrl = store.get('supabaseUrl');
+    const supabaseAnonKey = store.get('supabaseAnonKey');
+    
+    if (geminiApiKey) process.env.GEMINI_API_KEY = geminiApiKey;
+    if (supabaseUrl) process.env.SUPABASE_URL = supabaseUrl;
+    if (supabaseAnonKey) process.env.SUPABASE_ANON_KEY = supabaseAnonKey;
+  } catch (error) {
+    console.error('Error loading settings:', error);
+  }
+};
+
+loadSettingsToEnv();
+
+ipcMain.handle('get-settings', async () => {
+  try {
+    return {
+      geminiApiKey: store.get('geminiApiKey', ''),
+      supabaseUrl: store.get('supabaseUrl', ''),
+      supabaseAnonKey: store.get('supabaseAnonKey', ''),
+      databaseMode: store.get('databaseMode', 'local')
+    };
+  } catch (error) {
+    console.error('Error getting settings:', error);
+    return {};
+  }
+});
+
+ipcMain.handle('save-settings', async (event, settings) => {
+  try {
+    if (settings.geminiApiKey) store.set('geminiApiKey', settings.geminiApiKey);
+    if (settings.supabaseUrl) store.set('supabaseUrl', settings.supabaseUrl);
+    if (settings.supabaseAnonKey) store.set('supabaseAnonKey', settings.supabaseAnonKey);
+    if (settings.databaseMode) store.set('databaseMode', settings.databaseMode);
+    
+    process.env.GEMINI_API_KEY = settings.geminiApiKey || process.env.GEMINI_API_KEY;
+    process.env.SUPABASE_URL = settings.supabaseUrl || process.env.SUPABASE_URL;
+    process.env.SUPABASE_ANON_KEY = settings.supabaseAnonKey || process.env.SUPABASE_ANON_KEY;
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error saving settings:', error);
+    return { success: false, error: error.message };
+  }
+});
+
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -48,9 +102,10 @@ function createWindow() {
   });
 
   const distExists = require('fs').existsSync(path.join(__dirname, 'dist', 'index.html'));
-  
-  if (isDev && !distExists) {
-    mainWindow.loadURL('http://localhost:5173');
+  const devUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
+
+  if (isDev) {
+    mainWindow.loadURL(devUrl);
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
@@ -65,7 +120,20 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  if (app.isPackaged) {
+    const pythonDir = path.join(process.resourcesPath, 'python');
+    const transcribeScript = path.join(pythonDir, 'transcribe.py');
+    const speechAnalyzerScript = path.join(pythonDir, 'speech_analyzer.py');
+    
+    console.log('Checking Python scripts in packaged app:');
+    console.log('Python directory:', pythonDir);
+    console.log('Transcribe script exists:', require('fs').existsSync(transcribeScript));
+    console.log('Speech analyzer script exists:', require('fs').existsSync(speechAnalyzerScript));
+  }
+  
+  createWindow();
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -81,8 +149,31 @@ app.on('activate', () => {
 
 ipcMain.handle('transcribe', async (event, { audioPath }) => {
     return new Promise((resolve, reject) => {
-      const pythonScript = path.join(__dirname, 'src', 'main', 'python', 'transcribe.py');
-      const pythonExecutable = '/Library/Frameworks/Python.framework/Versions/3.12/bin/python3';
+      let pythonScript;
+      if (app.isPackaged) {
+        pythonScript = path.join(process.resourcesPath, 'python', 'transcribe.py');
+      } else {
+        pythonScript = path.join(__dirname, 'src', 'main', 'python', 'transcribe.py');
+      }
+      
+      let pythonExecutable = 'python3';
+      if (app.isPackaged) {
+        if (process.platform === 'win32') {
+          pythonExecutable = 'python';
+        } else if (process.platform === 'darwin') {
+          pythonExecutable = 'python3';
+        } else {
+          pythonExecutable = 'python3';
+        }
+      } else {
+        pythonExecutable = '/Library/Frameworks/Python.framework/Versions/3.12/bin/python3';
+      }
+      
+      if (!require('fs').existsSync(pythonScript)) {
+        reject(new Error(`Python script not found: ${pythonScript}`));
+        return;
+      }
+      
       const pythonProcess = spawn(pythonExecutable, [pythonScript, audioPath]);
   
   
@@ -123,7 +214,21 @@ ipcMain.handle('transcribe', async (event, { audioPath }) => {
 ipcMain.handle('select-file', () => fileService.selectAudioFile());
 
 ipcMain.handle('analyze-speech', async (event, { audioPath, motion, format, position, placeInRound, specificFeedback }) => {
-  return speechAnalyzer.analyze(audioPath, motion, format, position, placeInRound, specificFeedback);
+  try {
+    console.log('Analyze speech called with:', { audioPath, motion, format, position, placeInRound, specificFeedback });
+    
+    if (!speechAnalyzer) {
+      console.error('SpeechAnalyzer service not loaded');
+      return { success: false, error: 'Speech analyzer service not available' };
+    }
+    
+    const result = await speechAnalyzer.analyze(audioPath, motion, format, position, placeInRound, specificFeedback);
+    console.log('Analysis result:', result);
+    return { success: true, result };
+  } catch (error) {
+    console.error('Speech analysis error:', error);
+    return { success: false, error: error.message };
+  }
 });
 
 ipcMain.handle('chat', async (event, { speechData, message, conversationHistory }) => {
@@ -140,4 +245,4 @@ ipcMain.handle('chat', async (event, { speechData, message, conversationHistory 
     console.error('Chat error:', error);
     return { success: false, error: error.message };
   }
-}); 
+});
