@@ -10,7 +10,7 @@ openai-whisper>=20230314
 torch>=2.0.0
 torchaudio>=2.0.0
 spacy>=3.0.0 
-opensmile>=3.0.0
+opensmile>=2.5.0
 
 # audio processing
 #librosa>=0.10.0
