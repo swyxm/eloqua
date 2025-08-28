@@ -117,33 +117,34 @@ jobs:
         
     - name: Upload Assets with Delays
       run: |
+        set -euo pipefail
         # Wait for release to be fully created
         sleep 10
         
-        # Upload each platform build with delays and error handling
-        for file in artifacts/*; do
+        # Upload each file with delays and retry logic
+        find artifacts -type f -maxdepth 2 | while read -r file; do
           echo "Uploading $file..."
           
-          # Try upload with retry logic
           max_attempts=3
           attempt=1
           
           while [ $attempt -le $max_attempts ]; do
             echo "Attempt $attempt of $max_attempts for $file"
-            
-            if gh release upload v${{ github.ref_name }} "$file" --clobber; then
+            if gh release upload "v${GITHUB_REF_NAME}" "$file" --clobber; then
               echo "Successfully uploaded $file"
               break
             else
-              echo "Upload failed for $file, attempt $attempt"
+              echo "Upload failed for $file (attempt $attempt)"
               if [ $attempt -eq $max_attempts ]; then
                 echo "Failed to upload $file after $max_attempts attempts"
-                exit 1  # Fail the build if upload fails
+                exit 1
               fi
               attempt=$((attempt + 1))
-              sleep 30  # Wait longer between retries
+              sleep 30
             fi
           done
           
-          sleep 15  # Wait between different files
+          sleep 15
         done
+      env:
+        GH_TOKEN: ${{ github.token }}
