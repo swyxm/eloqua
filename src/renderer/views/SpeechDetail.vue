@@ -3,13 +3,13 @@
     <div class="max-w-6xl mx-auto space-y-8">
       <div class="flex items-center space-x-4">
         <router-link
-          to="/dashboard"
+          to="/speeches"
           class="inline-flex items-center px-4 py-2 bg-surface hover:bg-surface-hover text-primary rounded-lg transition-all duration-200 border border-border"
         >
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
           </svg>
-          Dashboard
+          Speeches
         </router-link>
       </div>
 
@@ -31,10 +31,10 @@
         <h3 class="text-xl font-medium text-primary mb-2">Speech not found</h3>
         <p class="text-muted mb-6">The speech you're looking for doesn't exist or has been removed.</p>
         <router-link
-          to="/dashboard"
+          to="/speeches"
           class="inline-flex items-center px-6 py-3 bg-accent hover:bg-accent/90 text-white font-medium rounded-lg transition-all duration-200"
         >
-          Return to Dashboard
+          Return to Speeches
         </router-link>
       </div>
 
@@ -177,7 +177,12 @@
                   
                   <div class="bg-accent/10 p-4 rounded-lg">
                     <div class="text-sm text-muted mb-1">Position</div>
-                    <div class="text-2xl font-semibold text-primary">{{ speech.position }}</div>
+                    <div class="text-2xl font-semibold text-primary">{{ mapPosition(speech.position) }}</div>
+                  </div>
+                  
+                  <div class="bg-accent/10 p-4 rounded-lg">
+                    <div class="text-sm text-muted mb-1">Partner</div>
+                    <div class="text-2xl font-semibold text-primary">{{ speech.partner || 'N/A' }}</div>
                   </div>
                   
                   <div class="bg-accent/10 p-4 rounded-lg">
@@ -284,15 +289,13 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabaseClient } from '../lib/supabaseClient.js'
 import ChatInterface from '../components/ChatInterface.vue'
+import { mapPosition } from '../../shared/utils/positionMapping.js'
 
 const route = useRoute()
 const router = useRouter()
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-)
+let supabase
 
 const speech = ref(null)
 const isLoading = ref(true)
@@ -365,7 +368,7 @@ const deleteSpeech = async () => {
 
     if (error) throw error
 
-    router.push('/dashboard')
+    router.push('/speeches')
   } catch (error) {
     console.error('Error deleting speech:', error)
     alert('Failed to delete speech. Please try again.')
@@ -533,6 +536,7 @@ const handleChatMessage = async (message) => {
       motion: speech.value.motion || '',
       debate_format: speech.value.debate_format || '',
       position: speech.value.position || '',
+      partner: speech.value.partner || null,
       score: speech.value.llm_analysis?.score || null,
       duration: speech.value.analysis_result?.duration_seconds || null,
       llm_feedback: speech.value.llm_analysis?.feedback || ''
@@ -612,7 +616,8 @@ const saveChatContext = async () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  supabase = await getSupabaseClient()
   loadSpeech()
 })
 </script>

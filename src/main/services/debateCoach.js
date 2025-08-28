@@ -39,12 +39,19 @@ class DebateCoachService {
         pythonExecutable = 'python3';
       }
       
+      const env = { 
+        ...process.env,
+        GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+        SUPABASE_URL: process.env.SUPABASE_URL,
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
+      };
+
       const pythonProcess = spawn(pythonExecutable, [
         scriptPath,
         speechDataJson,
         userMessage,
         conversationHistoryJson
-      ]);
+      ], { env });
 
       let stdout = '';
       let stderr = '';

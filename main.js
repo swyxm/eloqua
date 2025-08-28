@@ -50,6 +50,8 @@ const loadSettingsToEnv = () => {
     if (geminiApiKey) process.env.GEMINI_API_KEY = geminiApiKey;
     if (supabaseUrl) process.env.SUPABASE_URL = supabaseUrl;
     if (supabaseAnonKey) process.env.SUPABASE_ANON_KEY = supabaseAnonKey;
+    
+
   } catch (error) {
     console.error('Error loading settings:', error);
   }
@@ -108,16 +110,17 @@ function registerIpcHandlers() {
 
   ipcMain.handle('save-settings', async (event, settings) => {
     try {
-      if (settings.geminiApiKey) store.set('geminiApiKey', settings.geminiApiKey);
-      if (settings.supabaseUrl) store.set('supabaseUrl', settings.supabaseUrl);
-      if (settings.supabaseAnonKey) store.set('supabaseAnonKey', settings.supabaseAnonKey);
-      if (settings.databaseMode) store.set('databaseMode', settings.databaseMode);
-      if (settings.whisperModel) store.set('whisperModel', settings.whisperModel);
+      if (settings.geminiApiKey !== undefined) store.set('geminiApiKey', settings.geminiApiKey);
+      if (settings.supabaseUrl !== undefined) store.set('supabaseUrl', settings.supabaseUrl);
+      if (settings.supabaseAnonKey !== undefined) store.set('supabaseAnonKey', settings.supabaseAnonKey);
+      if (settings.databaseMode !== undefined) store.set('databaseMode', settings.databaseMode);
+      if (settings.whisperModel !== undefined) store.set('whisperModel', settings.whisperModel);
       
-      process.env.GEMINI_API_KEY = settings.geminiApiKey || process.env.GEMINI_API_KEY;
-      process.env.SUPABASE_URL = settings.supabaseUrl || process.env.SUPABASE_URL;
-      process.env.SUPABASE_ANON_KEY = settings.supabaseAnonKey || process.env.SUPABASE_ANON_KEY;
-      process.env.WHISPER_MODEL = settings.whisperModel || process.env.WHISPER_MODEL;
+      if (settings.geminiApiKey) process.env.GEMINI_API_KEY = settings.geminiApiKey;
+      if (settings.supabaseUrl) process.env.SUPABASE_URL = settings.supabaseUrl;
+      if (settings.supabaseAnonKey) process.env.SUPABASE_ANON_KEY = settings.supabaseAnonKey;
+      if (settings.whisperModel) process.env.WHISPER_MODEL = settings.whisperModel;
+
       
       return { success: true };
     } catch (error) {
@@ -153,7 +156,14 @@ function registerIpcHandlers() {
         return { success: false, error: 'Model manager script not found' };
       }
       
-      const pythonProcess = spawn(pythonExecutable, [pythonScript, modelName, 'install']);
+      const env = { 
+        ...process.env,
+        GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+        SUPABASE_URL: process.env.SUPABASE_URL,
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
+      };
+      
+      const pythonProcess = spawn(pythonExecutable, [pythonScript, modelName, 'install'], { env });
       
       return new Promise((resolve, reject) => {
         let output = '';
@@ -228,7 +238,14 @@ function registerIpcHandlers() {
       }
       
       const whisperModel = store.get('whisperModel', 'small');
-      const pythonProcess = spawn(pythonExecutable, [pythonScript, audioPath, whisperModel]);
+      const env = { 
+        ...process.env,
+        GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+        SUPABASE_URL: process.env.SUPABASE_URL,
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
+      };
+      
+      const pythonProcess = spawn(pythonExecutable, [pythonScript, audioPath, whisperModel], { env });
 
       let stdout = '';
       let stderr = '';
@@ -276,7 +293,7 @@ function registerIpcHandlers() {
       }
       
       const whisperModel = store.get('whisperModel', 'small');
-      const result = await speechAnalyzer.analyze(audioPath, motion, format, position, placeInRound, specificFeedback, whisperModel);
+      const result = await speechAnalyzer.analyze(audioPath, motion, format, position, placeInRound, specificFeedback);
       console.log('Analysis result:', result);
       return { success: true, result };
     } catch (error) {

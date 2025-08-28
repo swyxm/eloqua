@@ -20,7 +20,7 @@
             @file-removed="handleFileRemoved"
           />
           
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label class="form-label">Debate Motion <span class="text-red-500">*</span></label>
               <div class="relative">
@@ -67,6 +67,17 @@
                   required
                   class="form-input h-11"
                   :max="new Date().toISOString().split('T')[0]"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="form-label">Partner</label>
+              <div class="relative">
+                <input
+                  v-model="partner"
+                  type="text"
+                  class="form-input h-11"
+                  placeholder="e.g., Andy"
                 />
               </div>
             </div>
@@ -199,13 +210,10 @@ const components = {
   ChevronDown,
   ChevronsDown
 };
-import { createClient } from '@supabase/supabase-js';
+import { getSupabaseClient } from '../lib/supabaseClient.js';
 
 // Initialize Supabase client
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+let supabase;
 
 const router = useRouter();
 
@@ -217,6 +225,7 @@ const roundType = ref('practice');
 const tournamentName = ref('');
 const rank = ref('');
 const specificFeedback = ref('');
+const partner = ref('');
 const isLoading = ref(false);
 const roundNumber = ref('');
 const tournamentSuggestions = ref([]);
@@ -301,6 +310,7 @@ const canAnalyze = computed(() => {
 });
 
 onMounted(async () => {
+  supabase = await getSupabaseClient();
   await loadRecentData();
 });
 
@@ -382,6 +392,7 @@ const handleAnalyze = async () => {
       debate_format: format.value,
       position: position.value,
       motion: motion.value,
+      partner: partner.value || null,
       audio_path: selectedFile.value.name, 
       analysis_result: {
         transcript: analysisResult.transcript,
@@ -411,7 +422,7 @@ const handleAnalyze = async () => {
     store.analysisData = analysisResult;
     store.sessionData = sessionData;
 
-    router.push({ name: 'Dashboard' });
+    router.push({ name: 'Speeches' });
 
   } catch (error) {
     console.error('Analysis or save error:', error);

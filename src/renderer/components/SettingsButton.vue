@@ -149,6 +149,7 @@
 
 <script setup>
 import { ref, reactive, watch, inject } from 'vue'
+import { resetSupabaseClient } from '../lib/supabaseClient.js'
 
 const showSettings = ref(false)
 
@@ -183,6 +184,7 @@ const saveSettings = async () => {
     const result = await window.electron.ipcRenderer.invoke('save-settings', settingsToSave)
     
     if (result.success) {
+      try { resetSupabaseClient() } catch (e) {}
       if (prevSettings?.whisperModel !== workingSettings.whisperModel) {
         if (showModelInstall) showModelInstall(workingSettings.whisperModel)
         
@@ -207,6 +209,7 @@ const saveSettings = async () => {
       setTimeout(() => {
         saveStatus.value = ''
         showSettings.value = false
+        try { window.location.reload() } catch (e) {}
       }, 1500)
     } else {
       saveStatus.value = `Error: ${result.error || 'Failed to save settings'}`
