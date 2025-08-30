@@ -89,6 +89,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Free up disk space
+        run: |
+          df -h
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/hostedtoolcache
+          docker image prune -a -f || true
+          df -h
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -106,8 +113,11 @@ jobs:
       - name: Build Linux executables
         run: |
           pyinstaller --onefile --name transcribe src/main/python/transcribe.py
+          rm -rf build dist __pycache__
           pyinstaller --onefile --name speech_analyzer src/main/python/speech_analyzer.py
+          rm -rf build dist __pycache__
           pyinstaller --onefile --name model_manager src/main/python/model_manager.py
+          rm -rf build dist __pycache__
           pyinstaller --onefile --name debate_chat src/main/python/debate_chat.py
       - name: Stage binaries
         run: |
