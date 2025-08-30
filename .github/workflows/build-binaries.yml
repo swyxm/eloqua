@@ -1,0 +1,172 @@
+name: Build Python Binaries
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip wheel
+          python -m pip install pyinstaller openai-whisper
+          python -m pip install "torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu"
+          python -m pip install opensmile spacy requests ffmpeg-python
+          python -m spacy download en_core_web_sm
+      - name: Install FFmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v3
+      - name: Build Windows executables
+        run: |
+          pyinstaller --onefile --name transcribe src/main/python/transcribe.py
+          pyinstaller --onefile --name speech_analyzer src/main/python/speech_analyzer.py
+          pyinstaller --onefile --name model_manager src/main/python/model_manager.py
+          pyinstaller --onefile --name debate_chat src/main/python/debate_chat.py
+      - name: Stage binaries
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path resources/bin/win | Out-Null
+          Copy-Item dist/transcribe.exe resources/bin/win/
+          Copy-Item dist/speech_analyzer.exe resources/bin/win/
+          Copy-Item dist/model_manager.exe resources/bin/win/
+          Copy-Item dist/debate_chat.exe resources/bin/win/
+          Copy-Item (Get-Command ffmpeg.exe).Source resources/bin/win/
+      - name: Upload Windows binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-binaries
+          path: resources/bin/win/
+          if-no-files-found: error
+          retention-days: 14
+  
+  build-macos:
+      runs-on: macos-latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-python@v5
+          with:
+            python-version: '3.11'
+        - name: Install dependencies
+          run: |
+            python3 -m pip install --upgrade pip wheel
+            python3 -m pip install pyinstaller openai-whisper
+            python3 -m pip install torch torchvision torchaudio
+            python3 -m pip install opensmile spacy requests ffmpeg-python
+            python3 -m spacy download en_core_web_sm
+        - name: Install FFmpeg
+          run: brew install ffmpeg
+        - name: Build macOS executables
+          run: |
+            pyinstaller --onefile --name transcribe src/main/python/transcribe.py
+            pyinstaller --onefile --name speech_analyzer src/main/python/speech_analyzer.py
+            pyinstaller --onefile --name model_manager src/main/python/model_manager.py
+            pyinstaller --onefile --name debate_chat src/main/python/debate_chat.py
+        - name: Stage binaries
+          run: |
+            mkdir -p resources/bin/mac
+            cp dist/transcribe resources/bin/mac/
+            cp dist/speech_analyzer resources/bin/mac/
+            cp dist/model_manager resources/bin/mac/
+            cp dist/debate_chat resources/bin/mac/
+            cp "$(which ffmpeg)" resources/bin/mac/
+        - name: Upload macOS binaries
+          uses: actions/upload-artifact@v4
+          with:
+            name: macos-binaries
+            path: resources/bin/mac/
+            if-no-files-found: error
+            retention-days: 14
+
+  build-linux:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: actions/checkout@v4
+          - name: Free up disk space
+            run: |
+              df -h
+              sudo rm -rf /usr/local/lib/android
+              sudo rm -rf /opt/hostedtoolcache
+              docker image prune -a -f || true
+              df -h
+          - uses: actions/setup-python@v5
+            with:
+              python-version: '3.11'
+          - name: Install system deps
+            run: |
+              sudo apt-get update
+              sudo apt-get install -y ffmpeg
+          - name: Install Python deps
+            run: |
+              python3 -m pip install --upgrade pip wheel
+              python3 -m pip install pyinstaller openai-whisper
+              python3 -m pip install torch torchvision torchaudio
+              python3 -m pip install opensmile spacy requests ffmpeg-python
+              python3 -m spacy download en_core_web_sm
+          - name: Build Linux executables
+            run: |
+              mkdir -p resources/bin/linux
+    
+              pyinstaller --onefile --name transcribe src/main/python/transcribe.py
+              cp dist/transcribe resources/bin/linux/
+              rm -rf build dist __pycache__
+    
+              pyinstaller --onefile --name speech_analyzer src/main/python/speech_analyzer.py
+              cp dist/speech_analyzer resources/bin/linux/
+              rm -rf build dist __pycache__
+    
+              pyinstaller --onefile --name model_manager src/main/python/model_manager.py
+              cp dist/model_manager resources/bin/linux/
+              rm -rf build dist __pycache__
+    
+              pyinstaller --onefile --name debate_chat src/main/python/debate_chat.py
+              cp dist/debate_chat resources/bin/linux/
+              rm -rf build dist __pycache__
+    
+              cp "$(which ffmpeg)" resources/bin/linux/
+          - name: Upload Linux binaries
+            uses: actions/upload-artifact@v4
+            with:
+              name: linux-binaries
+              path: resources/bin/linux/
+              if-no-files-found: error
+              retention-days: 14
+
+  package-app:
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-binaries
+          path: resources/bin/win/
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-binaries
+          path: resources/bin/mac/
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-binaries
+          path: resources/bin/linux/
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - run: npm run electron:dist
+      - name: Upload packaged app
+        uses: actions/upload-artifact@v4
+        with:
+          name: packaged-app
+          path: dist/
+          if-no-files-found: error
+          retention-days: 14
