@@ -85,7 +85,7 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  build-linux:
+    build-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -112,20 +112,24 @@ jobs:
           python3 -m spacy download en_core_web_sm
       - name: Build Linux executables
         run: |
-          pyinstaller --onefile --name transcribe src/main/python/transcribe.py
-          rm -rf build dist __pycache__
-          pyinstaller --onefile --name speech_analyzer src/main/python/speech_analyzer.py
-          rm -rf build dist __pycache__
-          pyinstaller --onefile --name model_manager src/main/python/model_manager.py
-          rm -rf build dist __pycache__
-          pyinstaller --onefile --name debate_chat src/main/python/debate_chat.py
-      - name: Stage binaries
-        run: |
           mkdir -p resources/bin/linux
+
+          pyinstaller --onefile --name transcribe src/main/python/transcribe.py
           cp dist/transcribe resources/bin/linux/
+          rm -rf build dist __pycache__
+
+          pyinstaller --onefile --name speech_analyzer src/main/python/speech_analyzer.py
           cp dist/speech_analyzer resources/bin/linux/
+          rm -rf build dist __pycache__
+
+          pyinstaller --onefile --name model_manager src/main/python/model_manager.py
           cp dist/model_manager resources/bin/linux/
+          rm -rf build dist __pycache__
+
+          pyinstaller --onefile --name debate_chat src/main/python/debate_chat.py
           cp dist/debate_chat resources/bin/linux/
+          rm -rf build dist __pycache__
+
           cp "$(which ffmpeg)" resources/bin/linux/
       - name: Upload Linux binaries
         uses: actions/upload-artifact@v4
