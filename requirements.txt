@@ -4,13 +4,14 @@
 # install w/: pip install -r requirements.txt
 #
 
+pyinstaller
+
 # speech process
-openai>=1.0.0
-openai-whisper>=20230314
-torch>=2.0.0
-torchaudio>=2.0.0
-spacy>=3.0.0 
-opensmile>=2.5.0
+openai-whisper
+torch
+torchaudio
+spacy
+opensmile
 
 # audio processing
 #librosa>=0.10.0
@@ -18,27 +19,27 @@ opensmile>=2.5.0
 #pydub>=0.25.1
 
 # data analysis
-numpy>=1.24.0
-pandas>=2.0.0
-scipy>=1.10.0
+numpy
+pandas
+scipy
 
 # nlp
-nltk>=3.8
-spacy>=3.5.0
-transformers>=4.20.0
+nltk
+spacy
+transformers
 
 # sentiment analysis
 #textstat>=0.7.3
 #vaderSentiment>=3.3.2
 
 # ml
-scikit-learn>=1.2.0
+scikit-learn
 
 # reqs & api calls
-requests>=2.28.0
-urllib3>=1.26.0
+requests
+urllib3
 
 # config
-python-dotenv>=1.0.0
-pyyaml>=6.0
+python-dotenv
+pyyaml
 
