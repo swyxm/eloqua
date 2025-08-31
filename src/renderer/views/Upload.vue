@@ -436,5 +436,23 @@ const handleAnalyze = async () => {
   } finally {
     isLoading.value = false;
   }
-};
+  };
 </script>
+
+<style scoped>
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
+
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+</style>
