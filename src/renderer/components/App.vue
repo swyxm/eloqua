@@ -17,15 +17,26 @@
             Upload
           </router-link>
           <router-link 
-            to="/dashboard" 
+            to="/speeches" 
             :class="[
               'text-sm font-medium transition-colors px-3 py-2 rounded-md',
-              $route.path === '/dashboard' 
+              $route.path === '/speeches' 
                 ? 'bg-accent text-white' 
                 : 'text-secondary hover:bg-surface-hover'
             ]"
           >
-            Dashboard
+            Speeches
+          </router-link>
+          <router-link 
+            to="/stats" 
+            :class="[
+              'text-sm font-medium transition-colors px-3 py-2 rounded-md',
+              $route.path === '/stats' 
+                ? 'bg-accent text-white' 
+                : 'text-secondary hover:bg-surface-hover'
+            ]"
+          >
+            Stats
           </router-link>
         </nav>
       </template>
