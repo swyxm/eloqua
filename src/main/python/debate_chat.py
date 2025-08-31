@@ -58,6 +58,7 @@ SPEECH CONTEXT:
 - Motion: {speech_data.get('motion', 'N/A')}
 - Format: {speech_data.get('debate_format', 'N/A')}
 - Position: {speech_data.get('position', 'N/A')}
+- Partner: {speech_data.get('partner', 'N/A')}
 - Score: {speech_data.get('score', 'N/A')}
 - Duration: {speech_data.get('duration', 'N/A')} seconds
 

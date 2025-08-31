@@ -28,6 +28,14 @@ class SpeechAnalyzer {
         pythonArgs.push(specificFeedback);
       }
 
+      let runner;
+      if (app && app.isPackaged) {
+        const binDir = path.join(process.resourcesPath, 'bin');
+        if (process.platform === 'win32') runner = path.join(binDir, 'win', 'speech_analyzer.exe');
+        else if (process.platform === 'darwin') runner = path.join(binDir, 'mac', 'speech_analyzer');
+        else runner = path.join(binDir, 'linux', 'speech_analyzer');
+      }
+      const useBundled = runner && require('fs').existsSync(runner);
       const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
 
       console.log('Launching Python for analysis:', {
@@ -49,7 +57,9 @@ class SpeechAnalyzer {
         SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
       };
 
-      const pythonProcess = spawn(pythonExecutable, pythonArgs, { env });
+      const cmd = useBundled ? runner : pythonExecutable;
+      const args = useBundled ? pythonArgs.slice(1) : pythonArgs;
+      const pythonProcess = spawn(cmd, args, { env });
 
       let output = '';
       let error = '';

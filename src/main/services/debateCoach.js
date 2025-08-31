@@ -33,10 +33,16 @@ class DebateCoachService {
         return;
       }
       
-      let pythonExecutable = process.env.PYTHON_EXECUTABLE;
-      if (!pythonExecutable) {
-        pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
+      let runner;
+      if (process && process.resourcesPath) {
+        const binDir = path.join(process.resourcesPath, 'bin');
+        if (process.platform === 'win32') runner = path.join(binDir, 'win', 'debate_chat.exe');
+        else if (process.platform === 'darwin') runner = path.join(binDir, 'mac', 'debate_chat');
+        else runner = path.join(binDir, 'linux', 'debate_chat');
       }
+      const useBundled = runner && fs.existsSync(runner);
+      let pythonExecutable = process.env.PYTHON_EXECUTABLE;
+      if (!pythonExecutable) pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
       
       const env = { 
         ...process.env,
@@ -45,12 +51,9 @@ class DebateCoachService {
         SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
       };
 
-      const pythonProcess = spawn(pythonExecutable, [
-        scriptPath,
-        speechDataJson,
-        userMessage,
-        conversationHistoryJson
-      ], { env });
+      const cmd = useBundled ? runner : pythonExecutable;
+      const args = useBundled ? [speechDataJson, userMessage, conversationHistoryJson] : [scriptPath, speechDataJson, userMessage, conversationHistoryJson];
+      const pythonProcess = spawn(cmd, args, { env });
 
       let stdout = '';
       let stderr = '';
