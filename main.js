@@ -139,18 +139,20 @@ function registerIpcHandlers() {
         pythonScript = path.join(__dirname, 'src', 'main', 'python', 'model_manager.py');
       }
       
-      let pythonExecutable = process.env.PYTHON_EXECUTABLE;
-      if (!pythonExecutable) {
-        if (app.isPackaged) {
-          if (process.platform === 'win32') {
-            pythonExecutable = 'python';
-          } else {
-            pythonExecutable = 'python3';
-          }
+      let runner;
+      if (app.isPackaged) {
+        const binDir = path.join(process.resourcesPath, 'bin');
+        if (process.platform === 'win32') {
+          runner = path.join(binDir, 'win', 'model_manager.exe');
+        } else if (process.platform === 'darwin') {
+          runner = path.join(binDir, 'mac', 'model_manager');
         } else {
-          pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
+          runner = path.join(binDir, 'linux', 'model_manager');
         }
       }
+      const useBundled = runner && require('fs').existsSync(runner);
+      let pythonExecutable = process.env.PYTHON_EXECUTABLE;
+      if (!pythonExecutable) pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
       
       if (!require('fs').existsSync(pythonScript)) {
         return { success: false, error: 'Model manager script not found' };
@@ -163,7 +165,9 @@ function registerIpcHandlers() {
         SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
       };
       
-      const pythonProcess = spawn(pythonExecutable, [pythonScript, modelName, 'install'], { env });
+      const args = useBundled ? [modelName, 'install'] : [pythonScript, modelName, 'install'];
+      const cmd = useBundled ? runner : pythonExecutable;
+      const pythonProcess = spawn(cmd, args, { env });
       
       return new Promise((resolve, reject) => {
         let output = '';
@@ -219,18 +223,20 @@ function registerIpcHandlers() {
         pythonScript = path.join(__dirname, 'src', 'main', 'python', 'transcribe.py');
       }
       
-      let pythonExecutable = process.env.PYTHON_EXECUTABLE;
-      if (!pythonExecutable) {
-        if (app.isPackaged) {
-          if (process.platform === 'win32') {
-            pythonExecutable = 'python';
-          } else {
-            pythonExecutable = 'python3';
-          }
+      let runner;
+      if (app.isPackaged) {
+        const binDir = path.join(process.resourcesPath, 'bin');
+        if (process.platform === 'win32') {
+          runner = path.join(binDir, 'win', 'transcribe.exe');
+        } else if (process.platform === 'darwin') {
+          runner = path.join(binDir, 'mac', 'transcribe');
         } else {
-          pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
+          runner = path.join(binDir, 'linux', 'transcribe');
         }
       }
+      const useBundled = runner && require('fs').existsSync(runner);
+      let pythonExecutable = process.env.PYTHON_EXECUTABLE;
+      if (!pythonExecutable) pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
       
       if (!require('fs').existsSync(pythonScript)) {
         reject(new Error(`Python script not found: ${pythonScript}`));
@@ -245,7 +251,9 @@ function registerIpcHandlers() {
         SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
       };
       
-      const pythonProcess = spawn(pythonExecutable, [pythonScript, audioPath, whisperModel], { env });
+      const args = useBundled ? [audioPath, whisperModel] : [pythonScript, audioPath, whisperModel];
+      const cmd = useBundled ? runner : pythonExecutable;
+      const pythonProcess = spawn(cmd, args, { env });
 
       let stdout = '';
       let stderr = '';
