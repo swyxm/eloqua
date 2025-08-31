@@ -3,7 +3,7 @@
     <div v-if="showMetricToggle" class="relative">
       <button
         type="button"
-        class="flex items-center gap-2 rounded border border-border p-1 text-xs text-muted bg-bg hover:text-primary focus:outline-none focus:ring-2 focus:ring-accent/20"
+        class=" z-[999] flex items-center gap-2 rounded border border-border p-1 text-xs text-muted bg-bg hover:text-primary focus:outline-none focus:ring-2 focus:ring-accent/20"
         @click="openDropdown('metric')"
       >
         <span>Metric</span>
@@ -11,7 +11,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      <div v-if="metricDropdownOpen" class="absolute left-0 bg-bg border border-border rounded-lg shadow-lg p-1 min-w-[125px] mt-1">
+      <div v-if="metricDropdownOpen" class="z-[999] absolute left-0 bg-bg border border-border rounded-lg shadow-lg p-1 min-w-[70px] mt-1">
         <label :class="['flex items-center gap-1 px-1 py-1 cursor-pointer text-xs rounded hover:bg-surface-hover', filters.metric === 'score' ? 'bg-surface-hover text-primary' : 'text-muted']">
           <input
             type="radio"
@@ -46,7 +46,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      <div v-if="formatDropdownOpen" class="absolute left-0 bg-bg border border-border rounded-lg shadow-lg p-1 min-w-[60px] mt-1">
+      <div v-if="formatDropdownOpen" class="z-[999] absolute left-0 bg-bg border border-border rounded-lg shadow-lg p-1 min-w-[60px] mt-1">
         <label :class="['flex items-center gap-1 px-1 py-1 cursor-pointer text-xs rounded hover:bg-surface-hover', filters.formats && filters.formats.includes('BP') ? 'bg-surface-hover text-primary' : 'text-muted']">
           <input
             type="checkbox"
@@ -79,7 +79,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      <div v-if="typesDropdownOpen" class="absolute left-0 bg-bg border border-border rounded-lg shadow-lg p-1 min-w-[100px] mt-1">
+      <div v-if="typesDropdownOpen" class="z-[999] absolute left-0 bg-bg border border-border rounded-lg shadow-lg p-1 min-w-[100px] mt-1">
         <label :class="['flex items-center gap-1 px-1 py-1 cursor-pointer text-xs rounded hover:bg-surface-hover', filters.showTournaments ? 'bg-surface-hover text-primary' : 'text-muted']">
           <input
             type="checkbox"
@@ -107,13 +107,12 @@
         class="flex items-center gap-1 rounded border border-border pl-1 py-1 text-xs text-muted bg-bg hover:text-primary focus:outline-none focus:ring-2 focus:ring-accent/20"
         @click="openDropdown('date')"
       >
-        <span>Date: </span>
         <span class="font-regular">{{ displayDate() }}</span>
         <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      <div v-if="dateDropdownOpen" class="absolute left-0 z-50 bg-bg border border-border rounded-lg pt-2 pb-2 shadow-lg min-w-[150px] max-h-56 overflow-y-auto mt-1">
+      <div v-if="dateDropdownOpen" class="z-[999] absolute left-0 z-50 bg-bg border border-border rounded-lg pt-2 pb-2 shadow-lg min-w-[150px] max-h-56 overflow-y-auto mt-1">
         <label
           v-for="option in dateOptions"
           :key="option.value || 'all'"
@@ -158,7 +157,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      <div v-if="partnersDropdownOpen" class="absolute left-0 z-[60] bg-bg border border-border rounded-lg shadow-lg p-1 min-w-[135px] mt-1">
+      <div v-if="partnersDropdownOpen" class="z-[999] absolute left-0 z-50 bg-bg border border-border rounded-lg shadow-lg p-1 min-w-[135px] mt-1">
         <div class="mb-2">
           <input
             type="text"
@@ -281,13 +280,13 @@ const showMetricToggle = computed(() => props.cardType === 'progress')
 const showPartnerSelector = computed(() => ['partner', 'partnerProgress'].includes(props.cardType))
 const showTournamentCheckboxes = computed(() => props.cardType === 'tournament')
 const dateOptions = [
-  { value: null, label: 'All Time' },
-  { value: '7d', label: 'Last 7 days' },
-  { value: '30d', label: 'Last 30 days' },
-  { value: '90d', label: 'Last 90 days' },
-  { value: '6m', label: 'Last 6 months' },
-  { value: '1y', label: 'Last year' },
-  { value: 'custom', label: 'Custom' }
+  { value: null, label: 'All Time', display: 'All Time' },
+  { value: '7d', label: 'Last 7 days', display: 'Week' },
+  { value: '30d', label: 'Last 30 days', display: 'Month' },
+  { value: '90d', label: 'Last 90 days', display: '3 Months' },
+  { value: '6m', label: 'Last 6 months', display: '6 Months' },
+  { value: '1y', label: 'Last year', display: 'Year' },
+  { value: 'custom', label: 'Custom', display: 'Custom' }
 ]
 const updateFilter = (key, value) => {
   const newFilters = { ...props.filters, [key]: value }
@@ -324,7 +323,7 @@ const displayDate = () => {
     }
     return 'Custom range'
   }
-  return dateOptions.find(opt => opt.value === props.filters.dateRange)?.label || 'All Time'
+  return dateOptions.find(opt => opt.value === props.filters.dateRange)?.display || 'All Time'
 }
 const updateDateFilter = (value) => {
   let newFilters = { ...props.filters, dateRange: value }
