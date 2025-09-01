@@ -41,7 +41,12 @@ def extract_characteristics(audio_path):
         feature_set=opensmile.FeatureSet.eGeMAPSv02,
         feature_level=opensmile.FeatureLevel.Functionals
     )
-    return smile.process_file(audio_path)
+
+    try:
+        return smile.process_file(audio_path)
+    except Exception as e:
+        audio = whisper.load_audio(audio_path)
+        return smile.process_signal(audio, 16000)
 
 # nlp stats - wip
 def analyze_transcript(text):
@@ -154,7 +159,7 @@ def call_gemini_api(system_prompt, user_prompt):
             f"{GEMINI_API_URL}?key={GEMINI_API_KEY}",
             headers=headers,
             json=data,
-            timeout=60
+            timeout=120
         )
         
         if response.status_code == 200:
@@ -191,15 +196,14 @@ def main(audio_path, motion, format, position, place_in_round=None, specific_fee
         print(f"Error: Audio file not found: {audio_path}")
         sys.exit(1)
     
+    file_size_mb = os.path.getsize(audio_path) / (1024 * 1024)
     whisper_model = os.getenv("WHISPER_MODEL", "small")
     transcript, duration = transcribe(audio_path, model_name=whisper_model)
     prosody_df = extract_characteristics(audio_path)
     transcript_stats = analyze_transcript(transcript)
     features = prosody_df.to_dict(orient="records")[0]
-    
     system_prompt = get_system_prompt()
     user_prompt = get_user_prompt(transcript, features, duration, motion, format, position, place_in_round, specific_feedback)
-    
     llm_analysis = call_gemini_api(system_prompt, user_prompt)
     
     output = {
