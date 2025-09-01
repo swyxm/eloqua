@@ -11,7 +11,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      <div v-if="metricDropdownOpen" class="z-[999] absolute left-0 bg-bg border border-border rounded-lg shadow-lg p-1 min-w-[70px] mt-1">
+      <div v-if="metricDropdownOpen" class="z-[999] absolute left-0 bg-bg border border-border rounded-lg shadow-lg p-1 min-w-[125px] mt-1">
         <label :class="['flex items-center gap-1 px-1 py-1 cursor-pointer text-xs rounded hover:bg-surface-hover', filters.metric === 'score' ? 'bg-surface-hover text-primary' : 'text-muted']">
           <input
             type="radio"
