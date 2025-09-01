@@ -432,7 +432,17 @@ const handleAnalyze = async () => {
       details: error.details,
       hint: error.hint
     });
-    // TODO: Show an error message to the user in the UI
+
+    let userMessage = 'Analysis failed. Please try again.';
+    
+    if (error.message.includes('timed out')) {
+      userMessage = 'Analysis timed out. This usually happens with very long audio files (8+ minutes). Try using a shorter audio file for faster analysis.';
+    } else if (error.message.includes('File does not exist')) {
+      userMessage = 'Audio file not found. Please check if the file was moved or deleted.';
+    } else if (error.message.includes('Analysis failed with code 1')) {
+      userMessage = 'Audio processing failed. The file might be corrupted or in an unsupported format. Try converting to MP3 or WAV format.';
+    }
+    console.error('User message:', userMessage);
   } finally {
     isLoading.value = false;
   }
