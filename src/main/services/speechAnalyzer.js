@@ -59,7 +59,16 @@ class SpeechAnalyzer {
 
       const cmd = useBundled ? runner : pythonExecutable;
       const args = useBundled ? pythonArgs.slice(1) : pythonArgs;
+      
+      const audioDuration = require('fs').statSync(audioPath).size / (1024 * 1024);
+      const timeoutMs = Math.max(300000, audioDuration * 60000);
+      
       const pythonProcess = spawn(cmd, args, { env });
+      
+      const timeoutId = setTimeout(() => {
+        pythonProcess.kill('SIGKILL');
+        reject(new Error(`Analysis timed out after ${Math.round(timeoutMs/1000)}s. Try a shorter audio file or check if the file is corrupted.`));
+      }, timeoutMs);
 
       let output = '';
       let error = '';
@@ -73,6 +82,7 @@ class SpeechAnalyzer {
       });
 
       pythonProcess.on('close', (code) => {
+        clearTimeout(timeoutId);
         console.log('Python process closed with code:', code);
         if (error) console.error('Python stderr:', error);
         if (output) console.log('Python stdout (tail):', output.split('\n').slice(-5).join('\n'));
@@ -125,6 +135,7 @@ class SpeechAnalyzer {
       });
 
       pythonProcess.on('error', (err) => {
+        clearTimeout(timeoutId);
         reject(new Error(`Failed to start Python process: ${err.message}`));
       });
     });
