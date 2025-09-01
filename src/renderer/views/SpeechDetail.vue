@@ -13,13 +13,11 @@
         </router-link>
       </div>
 
-      <div v-if="isLoading" class="text-center py-16">
-        <div class="w-16 h-16 mx-auto mb-6 bg-primary/10 rounded-lg flex items-center justify-center">
-          <svg class="w-8 h-8 text-primary animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-          </svg>
+      <div v-if="isLoading" class="flex justify-center items-center py-16">
+        <div class="relative">
+          <div class="w-10 h-10 border-4 border-surface-hover rounded-full"></div>
+          <div class="absolute top-0 left-0 w-10 h-10 border-4 border-transparent border-t-accent rounded-full animate-spin"></div>
         </div>
-        <h3 class="text-xl font-medium text-primary mb-2">Loading speech details...</h3>
       </div>
 
       <div v-else-if="!speech" class="text-center py-16">
@@ -64,7 +62,6 @@
           </div>
         </div>
 
-        <!-- Collapsible Chat Card -->
         <div class="bg-card backdrop-blur-md rounded-xl shadow-lg border border-border">
           <div 
             @click="toggleChat"
@@ -662,7 +659,7 @@ onMounted(async () => {
 
 .analysis-grid {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr 0.8fr 1.4fr 1.6fr 0.6fr;
+  grid-template-columns: 0.5fr 0.7fr 0.5fr 0.8fr 1.4fr 1.2fr 0.5fr;
   grid-template-rows: 1fr;
 }
 </style>
