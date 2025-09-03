@@ -88,8 +88,28 @@
           </div>
         </div>
       </div>
+      <div v-if="String(speech.id || '').startsWith('round_')" class="grid grid-cols-2 gap-3 mb-6">
+        <div class="text-center">
+          <div class="w-12 h-12 mx-auto mb-2 bg-surface rounded-lg flex items-center justify-center shadow-sm">
+            <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"></path>
+            </svg>
+          </div>
+          <div class="text-sm font-bold text-primary">{{ mapPosition(speech.position) || '—' }}</div>
+          <div class="text-xs text-muted">Position</div>
+        </div>
+        <div class="text-center">
+          <div class="w-12 h-12 mx-auto mb-2 bg-surface rounded-lg flex items-center justify-center shadow-sm">
+            <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+            </svg>
+          </div>
+          <div class="text-sm font-bold text-primary">{{ speech.partner || '—' }}</div>
+          <div class="text-xs text-muted">Partner</div>
+        </div>
+      </div>
 
-      <div class="grid grid-cols-4 gap-3 mb-6">
+      <div v-else class="grid grid-cols-4 gap-3 mb-6">
         <div class="text-center">
           <div class="w-12 h-12 mx-auto mb-2 bg-surface rounded-lg flex items-center justify-center shadow-sm">
             <svg class="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
@@ -161,18 +181,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['view', 'delete'])
-
-
-
-const getScoreColor = (score, format = 'BP') => {
-  if (!score) return 'bg-muted shadow-muted/30'
-  const maxScore = format === 'BP' ? 85 : 75
-  const percentage = score / maxScore
-  
-  if (percentage >= 0.85) return 'bg-success shadow-success/30'
-  if (percentage >= 0.7) return 'bg-warning shadow-warning/30'
-  return 'bg-error shadow-error/30'
-}
 
 const getScoreGradient = (score, format = 'BP') => {
   if (!score) return 'url(#lowScore)'
