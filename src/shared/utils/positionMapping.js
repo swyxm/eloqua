@@ -10,7 +10,9 @@ const POSITION_MAPPINGS = {
   'Deputy Prime Minister': 'DPM',
   'Deputy Leader of the Opposition': 'DLO',
   'Member of Government': 'MG',
+  'Government Extension': 'MG',
   'Member of the Opposition': 'MO',
+  'Opposition Extension': 'MO',
   'Government Whip': 'GW',
   'Opposition Whip': 'OW',
   
