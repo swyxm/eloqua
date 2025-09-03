@@ -446,7 +446,6 @@ const filteredSpeeches = computed(() => {
     filtered = filtered.filter(speech => new Date(speech.created_at) >= cutoffDate)
   }
 
-  // Sort
   filtered.sort((a, b) => {
     switch (sortBy.value) {
       case 'date-desc':
@@ -496,8 +495,7 @@ const hasActiveFilters = computed(() => {
 const loadSpeeches = async () => {
   try {
     isLoading.value = true
-    
-    const { data, error } = await supabase
+    const { data: uploaded, error: uploadedErr } = await supabase
       .from('speeches')
       .select(`
         *,
@@ -505,12 +503,49 @@ const loadSpeeches = async () => {
       `)
       .order('created_at', { ascending: false })
 
-    if (error) throw error
-
-    speeches.value = data.map(speech => ({
+    if (uploadedErr) throw uploadedErr
+    const uploadedMapped = (uploaded || []).map(speech => ({
       ...speech,
       tournament_name: speech.tournaments?.name || 'Practice Session'
     }))
+    const { data: results, error: resultsErr } = await supabase
+      .from('debate_results')
+      .select(`
+        id,
+        result,
+        team_score,
+        speaker1_score,
+        speaker2_score,
+        speaker1_name,
+        speaker2_name,
+        position,
+        tournament_id,
+        round_id,
+        tournaments:tournament_id ( name ),
+        debate_rounds:round_id ( id, motion, date, created_at )
+      `)
+      .order('created_at', { referencedTable: 'debate_rounds', ascending: false })
+
+    if (resultsErr) throw resultsErr
+
+    const tournamentMapped = (results || []).map(r => ({
+      id: `round_${r.round_id}_${r.id}`,
+      tournament_id: r.tournament_id,
+      round_number: r.debate_rounds?.round || '',
+      round_type: 'tournament',
+      debate_format: 'BP',
+      position: r.position || '',
+      motion: r.debate_rounds?.motion || '—',
+      partner: r.speaker2_name || '-',
+      llm_analysis: r.speaker1_score != null ? { score: Number(r.speaker1_score) } : (r.team_score != null ? { score: Number(r.team_score) } : {}),
+      analysis_result: {},
+      speech_date: r.debate_rounds?.date || null,
+      place_in_round: r.result || null,
+      created_at: r.debate_rounds?.created_at || r.debate_rounds?.date || new Date().toISOString(),
+      tournament_name: r.tournaments?.name || ''
+    }))
+
+    speeches.value = [...uploadedMapped, ...tournamentMapped]
 
     calculateStats()
   } catch (error) {
@@ -523,8 +558,6 @@ const loadSpeeches = async () => {
 const calculateStats = () => {
   const now = new Date()
   const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
-
-  // Calculate average score only from speeches that have scores
   const speechesWithScores = speeches.value.filter(s => {
     const score = s.llm_analysis?.score
     return score !== null && score !== undefined
@@ -569,12 +602,8 @@ const deleteSpeech = async (speechId) => {
       .eq('id', speechId)
 
     if (error) throw error
-
-    // Remove from local state
     speeches.value = speeches.value.filter(s => s.id !== speechId)
-    
-    // Recalculate stats
-    calculateStats()
+      calculateStats()
   } catch (error) {
     console.error('Error deleting speech:', error)
     alert('Failed to delete speech. Please try again.')
@@ -641,7 +670,7 @@ const parseFeedback = (feedback) => {
   return sections
 }
 
-// Simple markdown renderer
+
 const renderMarkdown = (text) => {
   if (!text) return ''
   
