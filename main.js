@@ -80,19 +80,16 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, 'dist', 'index.html'));
-    console.log('Loading from production build:', path.join(__dirname, 'dist', 'index.html'));
     mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
       console.error('Renderer failed to load:', errorCode, errorDescription);
     });
     mainWindow.webContents.on('console-message', (e, level, message, line, sourceId) => {
-      console.log('Renderer console:', { level, message, line, sourceId });
     });
     mainWindow.webContents.openDevTools();
   }
 }
 
 function registerIpcHandlers() {
-  console.log('[Main] Registering IPC handlers...')
   ipcMain.handle('get-settings', async () => {
     try {
       return {
@@ -130,7 +127,6 @@ function registerIpcHandlers() {
   });
 
   ipcMain.handle('install-whisper-model', async (event, modelName) => {
-    console.log('[Main] install-whisper-model invoked with:', modelName)
     try {
       let pythonScript;
       if (app.isPackaged) {
@@ -180,7 +176,6 @@ function registerIpcHandlers() {
         pythonProcess.stderr.on('data', (data) => {
           const chunk = data.toString();
           error += chunk;
-          // Try to extract percentage from tqdm-like output (e.g., " 63%|")
           const match = chunk.match(/(\d{1,3})%/);
           if (match) {
             const percent = Math.max(0, Math.min(100, parseInt(match[1], 10)));
@@ -195,7 +190,6 @@ function registerIpcHandlers() {
           if (code === 0) {
             try {
               const result = JSON.parse(output.trim());
-              console.log('[Main] Model install result:', result);
               resolve({ success: true, result });
             } catch (e) {
               resolve({ success: false, error: 'Failed to parse model manager output' });
@@ -288,12 +282,9 @@ function registerIpcHandlers() {
     });
   });
 
-  // File selection handler
   ipcMain.handle('select-file', () => fileService.selectAudioFile());
-
   ipcMain.handle('analyze-speech', async (event, { audioPath, motion, format, position, placeInRound, specificFeedback }) => {
     try {
-      console.log('Analyze speech called with:', { audioPath, motion, format, position, placeInRound, specificFeedback });
       
       if (!speechAnalyzer) {
         console.error('SpeechAnalyzer service not loaded');
@@ -324,6 +315,71 @@ function registerIpcHandlers() {
       return { success: false, error: error.message };
     }
   });
+
+  ipcMain.handle('scrape-tabbycat', async (event, scrapeData) => {
+    try {
+      let pythonScript;
+      if (app.isPackaged) {
+        pythonScript = path.join(process.resourcesPath, 'python', 'tabbycat_scraper.py');
+      } else {
+        pythonScript = path.join(__dirname, 'src', 'main', 'python', 'tabbycat_scraper.py');
+      }
+      
+      if (!require('fs').existsSync(pythonScript)) {
+        return { success: false, error: 'Tabbycat scraper script not found' };
+      }
+      
+      const pythonPath = process.platform === 'win32' ? 'python' : 'python3';
+      
+      return new Promise((resolve, reject) => {
+        const args = [
+          pythonScript, 
+          scrapeData.url,
+          scrapeData.firstName,
+          scrapeData.lastName
+        ];
+        
+        if (scrapeData.institution) {
+          args.push(scrapeData.institution);
+        } else {
+          args.push('');
+        }
+      
+        const pythonProcess = spawn(pythonPath, args);
+        let outputData = '';
+        let errorData = '';
+        
+        pythonProcess.stdout.on('data', (data) => {
+          outputData += data.toString();
+        });
+        
+        pythonProcess.stderr.on('data', (data) => {
+          errorData += data.toString();
+        });
+        
+        pythonProcess.on('close', (code) => {
+          if (code === 0) {
+            try {
+              const result = JSON.parse(outputData);
+              resolve(result);
+            } catch (parseError) {
+              resolve({ success: false, error: `Failed to parse scraper output: ${parseError.message}` });
+            }
+          } else {
+            resolve({ success: false, error: `Scraper failed with code ${code}: ${errorData}` });
+          }
+        });
+        
+        pythonProcess.on('error', (error) => {
+          resolve({ success: false, error: `Failed to start scraper: ${error.message}` });
+        });
+      });
+      
+    } catch (error) {
+      console.error('Tabbycat scraping error:', error);
+      return { success: false, error: error.message };
+    }
+  });
 }
 
 app.whenReady().then(() => {
@@ -333,11 +389,6 @@ app.whenReady().then(() => {
     const pythonDir = path.join(process.resourcesPath, 'python');
     const transcribeScript = path.join(pythonDir, 'transcribe.py');
     const speechAnalyzerScript = path.join(pythonDir, 'speech_analyzer.py');
-    
-    console.log('Checking Python scripts in packaged app:');
-    console.log('Python directory:', pythonDir);
-    console.log('Transcribe script exists:', require('fs').existsSync(transcribeScript));
-    console.log('Speech analyzer script exists:', require('fs').existsSync(speechAnalyzerScript));
   }
   
   createWindow();
