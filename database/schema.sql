@@ -7,12 +7,10 @@
 -- Create tournaments table
 CREATE TABLE IF NOT EXISTS tournaments (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
+    name TEXT NOT NULL,
     start_date DATE,
-    end_date DATE,
     format TEXT,
-    location TEXT,
-    description TEXT,
+    tabbycat_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -77,8 +75,32 @@ CREATE TABLE IF NOT EXISTS debate_results (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Team info and stats not captured in speeches: create a team_stats table
+CREATE TABLE IF NOT EXISTS team_statistics (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    tournament_id UUID REFERENCES tournaments(id) ON DELETE CASCADE,
+    team_name TEXT,
+    partner_name TEXT,
+    total_points NUMERIC,
+    total_speaker_score NUMERIC,
+    first_places INTEGER,
+    second_places INTEGER,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    CONSTRAINT unique_tournament_team UNIQUE(tournament_id)
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_speeches_tournament_id ON speeches(tournament_id);
+-- Helpful tournament indexes and defaults
+-- Make (name, start_date) effectively unique for multi-year tourneys
+CREATE UNIQUE INDEX IF NOT EXISTS idx_tournaments_name_start_date_unique ON tournaments(name, start_date);
+
+-- Default debate format to BP if not specified
+DO $$ BEGIN
+  ALTER TABLE tournaments ALTER COLUMN format SET DEFAULT 'BP';
+EXCEPTION WHEN others THEN NULL; END $$;
+
 CREATE INDEX IF NOT EXISTS idx_speeches_created_at ON speeches(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_speeches_debate_format ON speeches(debate_format);
 CREATE INDEX IF NOT EXISTS idx_speeches_position ON speeches(position);
@@ -93,6 +115,10 @@ CREATE INDEX IF NOT EXISTS idx_debate_rounds_tournament_id ON debate_rounds(tour
 CREATE INDEX IF NOT EXISTS idx_debate_rounds_date ON debate_rounds(date);
 CREATE INDEX IF NOT EXISTS idx_debate_results_round_id ON debate_results(round_id);
 CREATE INDEX IF NOT EXISTS idx_debate_results_tournament_id ON debate_results(tournament_id);
+CREATE INDEX IF NOT EXISTS idx_team_statistics_tournament_id ON team_statistics(tournament_id);
+
+-- Make tournament_id unique (one team per tournament)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_team_statistics_tournament_id_unique ON team_statistics(tournament_id);
 
 -- Create full-text search index for motion, position, and partner
 CREATE INDEX IF NOT EXISTS idx_speeches_search ON speeches USING GIN (
@@ -105,6 +131,7 @@ ALTER TABLE speeches ENABLE ROW LEVEL SECURITY;
 ALTER TABLE partners ENABLE ROW LEVEL SECURITY;
 ALTER TABLE debate_rounds ENABLE ROW LEVEL SECURITY;
 ALTER TABLE debate_results ENABLE ROW LEVEL SECURITY;
+ALTER TABLE team_statistics ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for public access (you may want to restrict this based on your needs)
 CREATE POLICY "Allow public read access to tournaments" ON tournaments
@@ -164,6 +191,19 @@ CREATE POLICY "Allow public update access to debate_results" ON debate_results
 CREATE POLICY "Allow public delete access to debate_results" ON debate_results
     FOR DELETE USING (true);
 
+-- Policies for team_statistics table
+CREATE POLICY "Allow public read access to team_statistics" ON team_statistics
+    FOR SELECT USING (true);
+
+CREATE POLICY "Allow public insert access to team_statistics" ON team_statistics
+    FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow public update access to team_statistics" ON team_statistics
+    FOR UPDATE USING (true);
+
+CREATE POLICY "Allow public delete access to team_statistics" ON team_statistics
+    FOR DELETE USING (true);
+
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -194,21 +234,9 @@ CREATE TRIGGER update_debate_results_updated_at
     BEFORE UPDATE ON debate_results 
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Insert some sample tournaments for testing
-INSERT INTO tournaments (name) VALUES 
-    ('World Universities Debating Championship 2024'),
-    ('European Universities Debating Championship 2024'),
-    ('Practice Session'),
-    ('Local Tournament 2024')
-ON CONFLICT (name) DO NOTHING;
-
--- Create a view for easier querying of speeches with tournament names
-CREATE OR REPLACE VIEW speeches_with_tournaments AS
-SELECT 
-    s.*,
-    t.name as tournament_name
-FROM speeches s
-LEFT JOIN tournaments t ON s.tournament_id = t.id;
+CREATE TRIGGER update_team_statistics_updated_at 
+    BEFORE UPDATE ON team_statistics 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Grant necessary permissions
 GRANT USAGE ON SCHEMA public TO anon;
