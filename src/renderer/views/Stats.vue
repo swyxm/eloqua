@@ -487,7 +487,7 @@
     const loadStats = async () => {
     isLoading.value = true
     try {
-        const { data: speeches, error } = await supabase
+        const { data: uploaded, error: uploadedErr } = await supabase
         .from('speeches')
         .select(`
             *,
@@ -495,19 +495,76 @@
         `)
         .order('speech_date', { ascending: true })
 
-        if (error) throw error
+        if (uploadedErr) throw uploadedErr
 
-        allSpeeches.value = speeches || []
+        const uploadedMapped = (uploaded || []).map(speech => ({
+            ...speech,
+            tournament_name: speech.tournaments?.name || 'Practice Session'
+        }))
+
+        // 2) Tournament round results → map to speech-like objects
+        const { data: results, error: resultsErr } = await supabase
+        .from('debate_results')
+        .select(`
+            id,
+            result,
+            team_score,
+            speaker1_score,
+            speaker2_score,
+            speaker1_name,
+            speaker2_name,
+            position,
+            tournament_id,
+            round_id,
+            tournaments:tournament_id ( name ),
+            debate_rounds:round_id ( id, motion, date, created_at )
+        `)
+        .order('created_at', { referencedTable: 'debate_rounds', ascending: true })
+
+        if (resultsErr) throw resultsErr
+
+        const tournamentMapped = (results || []).map(r => ({
+            id: `round_${r.round_id}_${r.id}`,
+            tournament_id: r.tournament_id,
+            round_number: r.debate_rounds?.round || '',
+            round_type: 'tournament',
+            debate_format: 'BP',
+            position: r.position || '',
+            motion: r.debate_rounds?.motion || '—',
+            partner: r.speaker2_name || '-',
+            llm_analysis: r.speaker1_score != null ? { score: Number(r.speaker1_score) } : (r.team_score != null ? { score: Number(r.team_score) } : {}),
+            analysis_result: {},
+            speech_date: r.debate_rounds?.date || r.debate_rounds?.created_at || new Date().toISOString(),
+            place_in_round: r.result || null,
+            created_at: r.debate_rounds?.created_at || r.debate_rounds?.date || new Date().toISOString(),
+            tournament_name: r.tournaments?.name || ''
+        }))
+
+        allSpeeches.value = [...uploadedMapped, ...tournamentMapped]
         
         if (allSpeeches.value.length > 0) {
         const tSet = new Map()
+        
+        // Add tournaments from speeches
         allSpeeches.value.forEach(s => {
-            if (s.tournament_id && s.tournaments?.name) {
-            const id = s.tournament_id
-            const name = s.tournaments.name
-            if (!tSet.has(id)) tSet.set(id, { id, name })
+            if (s.tournament_id && s.tournament_name) {
+                const id = s.tournament_id
+                const name = s.tournament_name
+                if (!tSet.has(id)) tSet.set(id, { id, name })
             }
         })
+        
+        const { data: tournaments, error: tournamentsErr } = await supabase
+            .from('tournaments')
+            .select('id, name')
+            .order('name')
+        
+        if (!tournamentsErr && tournaments) {
+            tournaments.forEach(t => {
+                if (!tSet.has(t.id)) tSet.set(t.id, { id: t.id, name: t.name })
+            })
+        }
+        
         tournamentOptions.value = Array.from(tSet.values())
         
         updateAvailablePartners()
@@ -547,9 +604,9 @@
     
     filtered = filtered.filter(s => {
         const hasTournamentId = Boolean(s.tournament_id)
-        const hasTournamentRelation = Boolean(s.tournaments && s.tournaments.name)
-        const isPractice = !hasTournamentId && !hasTournamentRelation
-        const isTournament = hasTournamentId && hasTournamentRelation
+        const hasTournamentName = Boolean(s.tournament_name)
+        const isPractice = !hasTournamentId && !hasTournamentName
+        const isTournament = hasTournamentId && hasTournamentName
         
         if (!filters.showPractice && !filters.showTournaments) {
         return false
@@ -570,10 +627,10 @@
         const set = new Set(filters.selectedTournaments)
         filtered = filtered.filter(s => {
         const hasTournamentId = Boolean(s.tournament_id)
-        const hasTournamentRelation = Boolean(s.tournaments && s.tournaments.name)
-        const isPractice = !hasTournamentId && !hasTournamentRelation
+        const hasTournamentName = Boolean(s.tournament_name)
+        const isPractice = !hasTournamentId && !hasTournamentName
         if (isPractice) return true 
-        return set.has(s.tournament_id || s.tournaments?.name)
+        return set.has(s.tournament_id || s.tournament_name)
         })
     }
     
@@ -625,9 +682,9 @@
     const tournamentMap = new Map()
     
     speeches.forEach(speech => {
-        if (speech.tournament_id && speech.tournaments?.name) {
+        if (speech.tournament_id && speech.tournament_name) {
         const tournamentId = speech.tournament_id
-        const tournamentName = speech.tournaments.name
+        const tournamentName = speech.tournament_name
         
         if (!tournamentMap.has(tournamentId)) {
             tournamentMap.set(tournamentId, {
@@ -721,8 +778,8 @@
     }
 
     const updatePinnedComparisons = () => {
-    const a = allSpeeches.value.filter(s => (s.tournament_id || s.tournaments?.name || 'Practice Session') === compTournamentA.value)
-    const b = allSpeeches.value.filter(s => (s.tournament_id || s.tournaments?.name || 'Practice Session') === compTournamentB.value)
+    const a = allSpeeches.value.filter(s => (s.tournament_id || s.tournament_name || 'Practice Session') === compTournamentA.value)
+    const b = allSpeeches.value.filter(s => (s.tournament_id || s.tournament_name || 'Practice Session') === compTournamentB.value)
     compTournamentAStats.value = computeAgg(a)
     compTournamentBStats.value = computeAgg(b)
 
@@ -981,6 +1038,7 @@
         scales: {
             y: {
             ...CHART_OPTIONS.scales.y,
+            min: cardFilters.progress.metric === 'score' ? 60 : 0,
             title: {
                 display: true,
                 text: cardFilters.progress.metric === 'score' ? 'Speaker Score' : 'Round Points'
