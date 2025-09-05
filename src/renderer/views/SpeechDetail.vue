@@ -45,6 +45,8 @@
                 <span class="px-3 py-1 bg-primary/10 text-primary rounded-full">{{ speech.debate_format }}</span>
                 <span v-if="speech.tournament_name" class="px-3 py-1 bg-info/10 text-info rounded-full">{{ speech.tournament_name }}</span>
                 <span class="text-muted">{{ formatDate(speech.created_at) }}</span>
+                <span v-if="speech.position" class="px-3 py-1 bg-surface/60 text-primary rounded-full">{{ mapPosition(speech.position) }}</span>
+                <span v-if="speech.partner" class="px-3 py-1 bg-surface/60 text-primary rounded-full">Partner: {{ speech.partner }}</span>
               </div>
             </div>
             
@@ -313,8 +315,53 @@ const chatContext = ref([])
 const loadSpeech = async () => {
   try {
     isLoading.value = true
-    const speechId = route.params.id
-    
+    const speechId = String(route.params.id || '')
+    if (speechId.startsWith('round_')) {
+      const parts = speechId.split('_')
+      const resultId = parts.length >= 3 ? parts[2] : null
+
+      if (!resultId) throw new Error('Invalid round id format')
+
+      const { data: r, error: rErr } = await supabase
+        .from('debate_results')
+        .select(`
+          id,
+          result,
+          team_score,
+          speaker1_score,
+          speaker2_score,
+          position,
+          tournament_id,
+          round_id,
+          tournaments:tournament_id ( name ),
+          debate_rounds:round_id ( id, round, motion, date, created_at )
+        `)
+        .eq('id', resultId)
+        .single()
+
+      if (rErr) throw rErr
+
+      const mapped = {
+        id: speechId,
+        tournament_id: r.tournament_id,
+        motion: r.debate_rounds?.motion || '—',
+        debate_format: 'BP',
+        position: r.position || '',
+        partner: null,
+        llm_analysis: r.speaker1_score != null ? { score: Number(r.speaker1_score) } : (r.team_score != null ? { score: Number(r.team_score) } : {}),
+        analysis_result: {},
+        prosody_stats: null,
+        chat_context: [],
+        speech_date: r.debate_rounds?.date || null,
+        created_at: r.debate_rounds?.created_at || r.debate_rounds?.date || new Date().toISOString(),
+        place_in_round: r.result || null,
+        tournament_name: r.tournaments?.name || ''
+      }
+
+      speech.value = mapped
+      return
+    }
+
     const { data, error } = await supabase
       .from('speeches')
       .select(`
@@ -353,6 +400,12 @@ const loadSpeech = async () => {
 }
 
 const deleteSpeech = async () => {
+  if (!speech.value) return
+  if (String(speech.value.id || '').startsWith('round_')) {
+    alert('This item comes from tournament results and cannot be deleted here.')
+    return
+  }
+
   if (!confirm('Are you sure you want to delete this speech? This action cannot be undone.')) {
     return
   }
