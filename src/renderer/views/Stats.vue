@@ -185,48 +185,11 @@
                     <div class="flex items-center space-x-3 flex-shrink-0">
                     <div class="group/stat relative flex items-center space-x-1">
                         <div class="relative w-8 h-8">
-                        <svg class="w-8 h-8 transform rotate-270" viewBox="0 0 24 24">
-                            <defs>
-                            <linearGradient id="lowScore" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#f97316;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
-                            </linearGradient>
-                            <linearGradient id="midScore" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#84cc16;stop-opacity:1" />
-                            </linearGradient>
-                            <linearGradient id="highScore" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#84cc16;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#22c55e;stop-opacity:1" />
-                            </linearGradient>
-                            <linearGradient id="excellentScore" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
-                            </linearGradient>
-                            </defs>
-                            <circle
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            fill="none"
-                            class="text-surface"
-                            />
-                            <circle
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke-width="2"
-                            fill="none"
-                            stroke-linecap="round"
-                            :stroke-dasharray="`${2 * Math.PI * 10}`"
-                            :stroke-dashoffset="`${2 * Math.PI * 10 * (1 - (getScorePercentage(partner.avgScore, 'BP') / 100))}`"
-                            :stroke="getScoreGradient(partner.avgScore, 'BP')"
-                            class="progress-ring"
-                            :style="`--final-offset: ${2 * Math.PI * 10 * (1 - (getScorePercentage(partner.avgScore, 'BP') / 100))}px`"
-                            />
-                        </svg>
+                        <ProgressRing 
+                          :score="partner.avgScore" 
+                          format="BP" 
+                          size="small"
+                        />
                         <div class="absolute inset-0 flex items-center justify-center">
                             <span class="text-sm font-bold text-primary">
                             {{ partner.avgScore.toFixed(0) }}
@@ -390,13 +353,14 @@
 
     <script setup>
     import { ref, reactive, onMounted, watch, nextTick, computed } from 'vue'
-    import { getSupabaseClient } from '../lib/supabaseClient.js'
-    import Chart from 'chart.js/auto'
-    import { mapPosition } from '../../shared/utils/positionMapping.js'
-    import StatCard from '../components/StatCard.vue'
-    import Filter from '../components/Filter.vue'
-    import ChartLegend from '../components/ChartLegend.vue'
-    import { MicVocal, TrendingUp, ChevronsUp, ChevronUp, ChevronsDown, ChevronDown, Clock, RefreshCw, Trophy } from 'lucide-vue-next'
+import { getSupabaseClient } from '../lib/supabaseClient.js'
+import Chart from 'chart.js/auto'
+import { mapPosition } from '../../shared/utils/positionMapping.js'
+import ProgressRing from '../../shared/components/ProgressRing.vue'
+import StatCard from '../components/StatCard.vue'
+import Filter from '../components/Filter.vue'
+import ChartLegend from '../components/ChartLegend.vue'
+import { MicVocal, TrendingUp, ChevronsUp, ChevronUp, ChevronsDown, ChevronDown, Clock, RefreshCw, Trophy } from 'lucide-vue-next'
 
     let supabase
 
@@ -947,24 +911,6 @@
     }
     
     return false
-    }
-
-    const getScoreGradient = (score, format = 'BP') => {
-    if (!score) return 'url(#lowScore)'
-    const maxScore = format === 'BP' ? 85 : 75
-    const percentage = score / maxScore
-    
-    if (percentage >= 0.94) return 'url(#excellentScore)' 
-    if (percentage >= 0.88) return 'url(#highScore)'      
-    if (percentage >= 0.82) return 'url(#midScore)'
-    if (percentage >= 0.76) return 'url(#lowScore)'      
-    return 'url(#lowScore)' 
-    }
-
-    const getScorePercentage = (score, format = 'BP') => {
-    if (!score) return 0
-    const maxScore = format === 'BP' ? 85 : 75
-    return Math.min((score / maxScore) * 100, 100)
     }
 
     const updateProgressChart = () => {

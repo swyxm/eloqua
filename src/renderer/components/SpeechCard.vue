@@ -37,49 +37,11 @@
         <div class="flex items-center justify-center mb-3">
           <div class="relative w-16 h-16">
             <!-- Circular Progress Ring -->
-            <svg class="w-16 h-16 transform rotate-270" viewBox="0 0 64 64">
-              <defs>
-                <!-- Gradient definitions -->
-                <linearGradient id="lowScore" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#f97316;stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:1" />
-                </linearGradient>
-                <linearGradient id="midScore" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:#84cc16;stop-opacity:1" />
-                </linearGradient>
-                <linearGradient id="highScore" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#84cc16;stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:#22c55e;stop-opacity:1" />
-                </linearGradient>
-                <linearGradient id="excellentScore" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:#10b981;stop-opacity:1" />
-                </linearGradient>
-              </defs>
-              <circle
-                cx="32"
-                cy="32"
-                r="28"
-                stroke="currentColor"
-                stroke-width="4"
-                fill="none"
-                class="text-surface"
-              />
-              <circle
-                cx="32"
-                cy="32"
-                r="28"
-                stroke-width="4"
-                fill="none"
-                stroke-linecap="round"
-                :stroke-dasharray="`${2 * Math.PI * 28}`"
-                :stroke-dashoffset="`${2 * Math.PI * 28 * (1 - (getScorePercentage(speech.llm_analysis?.score, speech.debate_format) / 100))}`"
-                :stroke="getScoreGradient(speech.llm_analysis?.score, speech.debate_format)"
-                class="progress-ring"
-                :style="`--final-offset: ${2 * Math.PI * 28 * (1 - (getScorePercentage(speech.llm_analysis?.score, speech.debate_format) / 100))}px`"
-              />
-            </svg>
+            <ProgressRing 
+              :score="speech.llm_analysis?.score" 
+              :format="speech.debate_format" 
+              size="large"
+            />
             <div class="absolute inset-0 flex items-center justify-center">
               <span class="text-lg font-bold text-primary">
                 {{ speech.llm_analysis?.score || 'N/A' }}
@@ -172,6 +134,7 @@
 
 <script setup>
 import { mapPosition } from '../../shared/utils/positionMapping.js'
+import ProgressRing from '../../shared/components/ProgressRing.vue'
 
 const props = defineProps({
   speech: {
@@ -181,24 +144,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['view', 'delete'])
-
-const getScoreGradient = (score, format = 'BP') => {
-  if (!score) return 'url(#lowScore)'
-  const maxScore = format === 'BP' ? 85 : 75
-  const percentage = score / maxScore
-  
-  if (percentage >= 0.94) return 'url(#excellentScore)' // 80-85: Vibrant green
-  if (percentage >= 0.88) return 'url(#highScore)'      // 75-80: Healthy green
-  if (percentage >= 0.82) return 'url(#midScore)'       // 70-75: Yellow-green
-  if (percentage >= 0.76) return 'url(#lowScore)'       // 65-70: Orange-yellow
-  return 'url(#lowScore)' // Below 65: Orange
-}
-
-const getScorePercentage = (score, format = 'BP') => {
-  if (!score) return 0
-  const maxScore = format === 'BP' ? 85 : 75
-  return Math.min((score / maxScore) * 100, 100)
-}
 
 const formatDuration = (seconds) => {
   if (!seconds) return 'N/A'
