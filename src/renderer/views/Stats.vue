@@ -536,6 +536,7 @@
             analysis_result: {},
             speech_date: r.debate_rounds?.date || r.debate_rounds?.created_at || new Date().toISOString(),
             place_in_round: r.result || null,
+            team_score: r.team_score != null ? Number(r.team_score) : null,
             created_at: r.debate_rounds?.created_at || r.debate_rounds?.date || new Date().toISOString(),
             tournament_name: r.tournaments?.name || ''
         }))
@@ -672,7 +673,7 @@
     })
     totalTournaments.value = tournamentIds.size
 
-    const pointsArr = speeches.map(s => calculatePoints(s.place_in_round, s.debate_format))
+    const pointsArr = speeches.map(s => calculatePoints(s))
     overallAvgPoints.value = pointsArr.length ? pointsArr.reduce((a,b)=>a+b,0)/pointsArr.length : 0
     }
 
@@ -703,7 +704,7 @@
             tournament.scores.push(speech.llm_analysis.score)
         }
         
-        const points = calculatePoints(speech.place_in_round, speech.debate_format)
+        const points = calculatePoints(speech)
         tournament.points.push(points)
         }
     })
@@ -752,7 +753,7 @@
         speechCount: p.speeches.length,
         avgScore: p.scores.length > 0 ? p.scores.reduce((a, b) => a + b, 0) / p.scores.length : 0,
         winRate: p.total > 0 ? p.wins / p.total : 0,
-        avgPoints: p.speeches.length > 0 ? p.speeches.map(s => calculatePoints(s.place_in_round, s.debate_format)).reduce((a, b) => a + b, 0) / p.speeches.length : 0
+        avgPoints: p.speeches.length > 0 ? p.speeches.map(s => calculatePoints(s)).reduce((a, b) => a + b, 0) / p.speeches.length : 0
     }))
     }
 
@@ -770,7 +771,7 @@
 
     const computeAgg = (speeches) => {
     const scores = speeches.map(s => s.llm_analysis?.score).filter(Boolean)
-    const pts = speeches.map(s => calculatePoints(s.place_in_round, s.debate_format))
+    const pts = speeches.map(s => calculatePoints(s))
     return {
         avgScore: scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : 0,
         avgPoints: pts.length ? pts.reduce((a,b)=>a+b,0)/pts.length : 0
@@ -789,7 +790,13 @@
     compPartnerBStats.value = computeAgg(pb)
     }
 
-    const calculatePoints = (placeInRound, format) => {
+    const calculatePoints = (speech) => {
+    if (speech.round_type === 'tournament' && speech.team_score != null) {
+        return Number(speech.team_score)
+    }
+    const placeInRound = speech.place_in_round
+    const format = speech.debate_format
+    
     if (!placeInRound) return 0
     if (format === 'BP') {
         switch (placeInRound) {
@@ -886,7 +893,7 @@
         const scores = speechesOnDate.map(s => s.llm_analysis?.score).filter(Boolean)
         return scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null
         } else if (dataType === 'points') {
-        const points = speechesOnDate.map(s => calculatePoints(s.place_in_round, s.debate_format))
+        const points = speechesOnDate.map(s => calculatePoints(s))
         return points.length > 0 ? points.reduce((a, b) => a + b, 0) / points.length : null
         }
         
@@ -920,7 +927,7 @@
         const scores = speechesInCategory.map(s => s.llm_analysis?.score).filter(Boolean)
         return scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0
         } else if (dataType === 'points') {
-        const points = speechesInCategory.map(s => calculatePoints(s.place_in_round, s.debate_format))
+        const points = speechesInCategory.map(s => calculatePoints(s))
         return points.length > 0 ? points.reduce((a, b) => a + b, 0) / points.length : 0
         }
         
@@ -1133,7 +1140,7 @@
         })
         
         if (speechesOnDate.length === 0) return null
-        const points = speechesOnDate.map(s => calculatePoints(s.place_in_round, s.debate_format))
+        const points = speechesOnDate.map(s => calculatePoints(s))
         return points.length > 0 ? points.reduce((a, b) => a + b, 0) / points.length : null
         })
         

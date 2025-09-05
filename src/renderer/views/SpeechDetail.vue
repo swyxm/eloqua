@@ -291,6 +291,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { getSupabaseClient } from '../lib/supabaseClient.js'
 import ChatInterface from '../components/ChatInterface.vue'
 import { mapPosition } from '../../shared/utils/positionMapping.js'
+import { renderMarkdown } from '../../shared/utils/markdownRenderer.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -498,28 +499,6 @@ const parseFeedback = (feedback) => {
   return sections
 }
 
-const renderMarkdown = (text) => {
-  if (!text) return ''
-  
-  return text
-    // Headers
-    .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-primary mb-2">$1</h3>')
-    .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold text-primary mb-3 mt-4">$1</h2>')
-    .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-semibold text-primary mb-4 mt-6">$1</h1>')
-    // Lists
-    .replace(/^\d+\.\s+(.*$)/gim, '<li class="ml-4 mb-1">$1</li>')
-    .replace(/^-\s+(.*$)/gim, '<li class="ml-4 mb-1">$1</li>')
-    // Bold
-    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-    // Line breaks
-    .replace(/\n\n/g, '</p><p class="mb-3">')
-    .replace(/\n/g, '<br>')
-    // Wrap in paragraphs
-    .replace(/^(.+)$/gm, '<p class="mb-3">$1</p>')
-    // Clean up empty paragraphs
-    .replace(/<p class="mb-3"><\/p>/g, '')
-    .replace(/<p class="mb-3"><br><\/p>/g, '')
-}
 
 // Score helper functions for the progress ring
 const getScoreGradient = (score, format = 'BP') => {

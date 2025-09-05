@@ -78,6 +78,7 @@
 
 <script setup>
 import { ref, onMounted, nextTick, watch } from 'vue';
+import { renderMarkdown } from '../../shared/utils/markdownRenderer.js';
 const props = defineProps({
   messages: {
     type: Array,
@@ -114,63 +115,6 @@ const formatTime = (timestamp) => {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-const renderMarkdown = (text) => {
-  if (!text) return '';
-  
-  let html = text;
-  
-  // Headers
-  html = html.replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-primary mb-2">$1</h3>');
-  html = html.replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold text-primary mb-3 mt-4">$1</h2>');
-  html = html.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-semibold text-primary mb-4 mt-6">$1</h1>');
-  
-  // Bold and Italic
-  html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>');
-  html = html.replace(/\*(.*?)\*/g, '<em class="italic">$1</em>');
-  
-  const lines = html.split('\n');
-  let inList = false;
-  let listType = '';
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    
-    if (line.match(/^(\d+\.|-)\s+/)) {
-      // Start of a list
-      if (!inList) {
-        inList = true;
-        listType = line.match(/^\d+\./) ? 'ol' : 'ul';
-        lines[i] = `<${listType} class="list-${listType} ml-4 mb-3">\n<li class="ml-4 mb-1">${line.replace(/^(\d+\.|-)\s+/, '')}</li>`;
-      } else {
-        // Continue list
-        lines[i] = `<li class="ml-4 mb-1">${line.replace(/^(\d+\.|-)\s+/, '')}</li>`;
-      }
-    } else if (inList && line === '') {
-      // End of list
-      inList = false;
-      lines[i] = `</${listType}>\n`;
-    } else if (inList && !line.match(/^(\d+\.|-)\s+/)) {
-      // End of list (non-list item encountered)
-      inList = false;
-      lines[i] = `</${listType}>\n${line}`;
-    } else if (!inList && line !== '') {
-      // Regular paragraph
-      lines[i] = `<p class="mb-3 leading-relaxed">${line}</p>`;
-    }
-  }
-  
-  if (inList) {
-    lines.push(`</${listType}>`);
-  }
-  
-  html = lines.join('\n');
-  
-  // Clean up
-  html = html.replace(/<p class="mb-3 leading-relaxed"><\/p>/g, '');
-  html = html.replace(/<p class="mb-3 leading-relaxed"><br><\/p>/g, '');
-  
-  return html;
-};
 
 watch(
   () => props.messages,

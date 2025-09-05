@@ -333,6 +333,7 @@ import { getSupabaseClient } from '../lib/supabaseClient.js'
 import SpeechCard from '../components/SpeechCard.vue'
 import EloquaLogo from '../components/EloquaLogo.vue'
 import { MicVocal, Trophy, Target, Calendar, Clock, CalendarDays, BarChart3 } from 'lucide-vue-next'
+import { renderMarkdown } from '../../shared/utils/markdownRenderer.js'
 
 const router = useRouter()
 let supabase
@@ -671,22 +672,6 @@ const parseFeedback = (feedback) => {
 }
 
 
-const renderMarkdown = (text) => {
-  if (!text) return ''
-  
-  return text
-    .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-primary mb-2">$1</h3>')
-    .replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold text-primary mb-3 mt-4">$1</h2>')
-    .replace(/^# (.*$)/gim, '<h1 class="text-2xl font-semibold text-primary mb-4 mt-6">$1</h1>')
-    .replace(/^\d+\.\s+(.*$)/gim, '<li class="ml-4 mb-1">$1</li>')
-    .replace(/^-\s+(.*$)/gim, '<li class="ml-4 mb-1">$1</li>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold">$1</strong>')
-    .replace(/\n\n/g, '</p><p class="mb-3">')
-    .replace(/\n/g, '<br>')
-    .replace(/^(.+)$/gm, '<p class="mb-3">$1</p>')
-    .replace(/<p class="mb-3"><\/p>/g, '')
-    .replace(/<p class="mb-3"><br><\/p>/g, '')
-}
 
 watch([searchQuery, filters, sortBy], () => {
   currentPage.value = 1
