@@ -189,21 +189,47 @@
       </div>
     </div>
     
-    <div v-if="showTournamentCheckboxes" class="flex flex-wrap gap-1 max-w-32">
-          <div
-            v-for="tournament in tournamentOptions"
+    <div v-if="showTournamentCheckboxes" class="relative">
+      <button
+        type="button"
+        class="flex items-center gap-2 rounded border border-border pl-1 py-1 text-xs text-muted bg-bg hover:text-primary focus:outline-none focus:ring-2 focus:ring-accent/20"
+        @click="openDropdown('tournaments')"
+      >
+        <span>{{ displayTournamentText() }}</span>
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      <div v-if="tournamentsDropdownOpen" class="z-[999] absolute left-0 z-50 bg-bg border border-border rounded-lg shadow-lg p-1 w-[155px] mt-1">
+        <div class="mb-2">
+          <input
+            type="text"
+            v-model="tournamentSearch"
+            placeholder="Search tournaments..."
+            class="w-full p-1 text-xs bg-bg border border-border rounded focus:outline-none focus:ring-1 focus:ring-accent/20"
+          />
+        </div>
+        
+        <div v-if="filteredTournaments.length > 0" class="max-h-32 overflow-y-auto">
+          <label
+            v-for="tournament in filteredTournaments"
             :key="tournament.id || tournament.name"
-            :class="['flex items-center space-x-1 rounded px-1', (filters.selectedTournaments || []).includes(tournament.id || tournament.name) ? 'bg-surface-hover' : '']"
+            :class="['flex items-center gap-2 px-1 py-1 cursor-pointer text-xs rounded hover:bg-surface-hover', (filters.selectedTournaments || []).includes(tournament.id || tournament.name) ? 'bg-surface-hover text-primary' : 'text-muted']"
           >
-            <input 
-              type="checkbox" 
-              :value="tournament.id || tournament.name"
-              v-model="filters.selectedTournaments"
-              @change="updateFilter('selectedTournaments', filters.selectedTournaments)"
-              class="rounded border-border text-xs"
+            <input
+              type="checkbox"
+              :checked="(filters.selectedTournaments || []).includes(tournament.id || tournament.name)"
+              @change="updateTournamentFilter(tournament.id || tournament.name, $event.target.checked)"
+              class="rounded border-border flex-shrink-0"
             />
-            <span class="text-xs text-primary truncate">{{ tournament.name }}</span>
-          </div>
+            <span class="truncate">{{ tournament.name }}</span>
+          </label>
+        </div>
+        
+        <div v-else class="p-1 text-xs text-muted text-center">
+          {{ tournamentOptions.length === 0 ? 'No tournaments available' : 'No tournaments found' }}
+        </div>
+      </div>
     </div>
 
     <button 
@@ -249,8 +275,10 @@ const typesDropdownOpen = ref(false)
 const metricDropdownOpen = ref(false)
 const formatDropdownOpen = ref(false)
 const partnersDropdownOpen = ref(false)
+const tournamentsDropdownOpen = ref(false)
 const dateDropdownOpen = ref(false)
 const partnerSearch = ref('')
+const tournamentSearch = ref('')
 
 const handleClickOutside = (event) => {
   if (!event.target.closest('.relative')) {
@@ -258,6 +286,7 @@ const handleClickOutside = (event) => {
     metricDropdownOpen.value = false
     formatDropdownOpen.value = false
     partnersDropdownOpen.value = false
+    tournamentsDropdownOpen.value = false
     dateDropdownOpen.value = false
   }
 }
@@ -266,6 +295,7 @@ const openDropdown = (dropdownType) => {
   formatDropdownOpen.value = dropdownType === 'format' ? !formatDropdownOpen.value : false
   typesDropdownOpen.value = dropdownType === 'types' ? !typesDropdownOpen.value : false
   partnersDropdownOpen.value = dropdownType === 'partners' ? !partnersDropdownOpen.value : false
+  tournamentsDropdownOpen.value = dropdownType === 'tournaments' ? !tournamentsDropdownOpen.value : false
   dateDropdownOpen.value = dropdownType === 'date' ? !dateDropdownOpen.value : false
 }
 
@@ -306,11 +336,27 @@ const updatePartnerFilter = (partner, checked) => {
     : currentPartners.filter(p => p !== partner)
   emit('update:filters', { ...props.filters, selectedPartners: newPartners })
 }
+const updateTournamentFilter = (tournament, checked) => {
+  const currentTournaments = props.filters.selectedTournaments || []
+  const newTournaments = checked 
+    ? [...currentTournaments, tournament]
+    : currentTournaments.filter(t => t !== tournament)
+  emit('update:filters', { ...props.filters, selectedTournaments: newTournaments })
+}
 const displayPartnerText = () => {
   const partners = props.filters.selectedPartners || []
   if (partners.length === 0) return 'Partners'
   if (partners.length === 1) return partners[0]
   return `${partners.length} Partners`
+}
+const displayTournamentText = () => {
+  const tournaments = props.filters.selectedTournaments || []
+  if (tournaments.length === 0) return 'Tournaments'
+  if (tournaments.length === 1) {
+    const tournament = props.tournamentOptions.find(t => (t.id || t.name) === tournaments[0])
+    return tournament?.name || tournaments[0]
+  }
+  return `${tournaments.length} Tournaments`
 }
 const displayDate = () => {
   if (props.filters.dateRange === 'custom') {
@@ -362,6 +408,12 @@ const filteredPartners = computed(() => {
   if (!partnerSearch.value) return props.availablePartners
   return props.availablePartners.filter(partner => 
     partner.toLowerCase().includes(partnerSearch.value.toLowerCase())
+  )
+})
+const filteredTournaments = computed(() => {
+  if (!tournamentSearch.value) return props.tournamentOptions
+  return props.tournamentOptions.filter(tournament => 
+    tournament.name.toLowerCase().includes(tournamentSearch.value.toLowerCase())
   )
 })
 const resetFilters = () => {
