@@ -39,8 +39,39 @@
       <div v-else class="space-y-8">
         <div class="bg-card backdrop-blur-md rounded-xl shadow-lg p-4 border border-border">
           <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-            <div>
-              <h1 class="text-4xl font-semibold text-primary mb-3">{{ speech.motion }}</h1>
+            <div class="relative group flex-1">
+              <h1 v-if="editingField !== 'motion'" class="text-4xl font-semibold text-primary mb-3">{{ speech.motion }}</h1>
+              <input 
+                v-else
+                v-model="editingValue"
+                @keyup.enter="saveField"
+                @keyup.escape="cancelEditing"
+                class="text-4xl font-semibold text-primary bg-transparent border-b-2 border-accent focus:outline-none w-full mb-3"
+                autofocus
+              />
+              
+              <!-- Edit Controls for Motion -->
+              <div class="absolute top-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div v-if="editingField !== 'motion'" class="flex space-x-1">
+                  <button @click="startEditing('motion', speech.motion)" class="p-1 hover:bg-accent/20 rounded">
+                    <svg class="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                  </button>
+                </div>
+                <div v-else class="flex space-x-1">
+                  <button @click="saveField" class="p-1 hover:bg-success/20 rounded">
+                    <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </button>
+                  <button @click="cancelEditing" class="p-1 hover:bg-error/20 rounded">
+                    <svg class="w-4 h-4 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
               <div class="flex flex-wrap items-center gap-3 text-sm text-muted">
                 <span class="px-3 py-1 bg-primary/10 text-primary rounded-full">{{ speech.debate_format }}</span>
                 <span v-if="speech.tournament_name" class="px-3 py-1 bg-info/10 text-info rounded-full">{{ speech.tournament_name }}</span>
@@ -137,24 +168,193 @@
                     <div class="text-2xl font-semibold text-primary">{{ speech.analysis_result?.transcript_stats?.word_count || 'N/A' }}</div>
                   </div>
                   
-                  <div class="bg-accent/10 p-4 rounded-lg">
+                  <div class="bg-accent/10 p-4 rounded-lg relative group">
                     <div class="text-sm text-muted mb-1">Position</div>
-                    <div class="text-2xl font-semibold text-primary">{{ mapPosition(speech.position) }}</div>
+                    <div v-if="editingField !== 'position'" class="text-2xl font-semibold text-primary">
+                      {{ mapPosition(speech.position) }}
+                    </div>
+                    <div v-else class="relative">
+                      <button
+                        type="button"
+                        class="flex items-center justify-between w-full text-2xl font-semibold text-primary bg-transparent border-b-2 border-accent focus:outline-none"
+                        @click="positionDropdownOpen = !positionDropdownOpen"
+                      >
+                        <span>{{ mapPosition(editingValue) }}</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      <div v-if="positionDropdownOpen" class="absolute top-full left-0 bg-bg border border-border rounded-lg shadow-lg p-1 min-w-[200px] max-h-40 overflow-y-auto mt-1 z-[9999]">
+                        <label 
+                          v-for="position in getValidPositions(editingField === 'format' ? editingValue : speech.debate_format)" 
+                          :key="position.value"
+                          :class="['flex items-center gap-1 px-1 py-1 cursor-pointer text-sm rounded hover:bg-surface-hover', editingValue === position.value ? 'bg-surface-hover text-primary' : 'text-muted']"
+                          @click="editingValue = position.value"
+                        >
+                          <input
+                            type="radio"
+                            name="position"
+                            :checked="editingValue === position.value"
+                            class="border-border"
+                            readonly
+                          />
+                          <span>{{ position.label }}</span>
+                        </label>
+                      </div>
+                    </div>                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div v-if="editingField !== 'position'" class="flex space-x-1">
+                        <button @click="startEditingPosition" class="p-1 hover:bg-accent/20 rounded">
+                          <svg class="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                          </svg>
+                        </button>
+                      </div>
+                      <div v-else class="flex space-x-1">
+                        <button @click="saveField" class="p-1 hover:bg-success/20 rounded">
+                          <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                          </svg>
+                        </button>
+                        <button @click="cancelEditing" class="p-1 hover:bg-error/20 rounded">
+                          <svg class="w-4 h-4 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  
-                  <div class="bg-accent/10 p-4 rounded-lg">
+                                    <div class="bg-accent/10 p-4 rounded-lg relative group">
                     <div class="text-sm text-muted mb-1">Partner</div>
-                    <div class="text-2xl font-semibold text-primary">{{ speech.partner || 'N/A' }}</div>
+                    <div v-if="editingField !== 'partner'" class="text-2xl font-semibold text-primary">
+                      {{ speech.partner || 'N/A' }}
+                    </div>
+                    <input 
+                      v-else
+                      v-model="editingValue"
+                      @keyup.enter="saveField"
+                      @keyup.escape="cancelEditing"
+                      class="text-2xl font-semibold text-primary bg-transparent border-b-2 border-accent focus:outline-none w-full"
+                      autofocus
+                    />
+                    
+                    <!-- Edit Controls -->
+                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div v-if="editingField !== 'partner'" class="flex space-x-1">
+                        <button @click="startEditing('partner', speech.partner)" class="p-1 hover:bg-accent/20 rounded">
+                          <svg class="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                          </svg>
+                        </button>
+                      </div>
+                      <div v-else class="flex space-x-1">
+                        <button @click="saveField" class="p-1 hover:bg-success/20 rounded">
+                          <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                          </svg>
+                        </button>
+                        <button @click="cancelEditing" class="p-1 hover:bg-error/20 rounded">
+                          <svg class="w-4 h-4 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                   
-                  <div class="bg-accent/10 p-4 rounded-lg">
+                  <div class="bg-accent/10 p-4 rounded-lg relative group">
                     <div class="text-sm text-muted mb-1">Date</div>
-                    <div class="text-2xl font-semibold text-primary">{{ formatDate(speech.speech_date) }}</div>
+                    <div v-if="editingField !== 'date'" class="text-2xl font-semibold text-primary">
+                      {{ formatDate(speech.speech_date) }}
+                    </div>
+                    <input 
+                      v-else
+                      v-model="editingValue"
+                      type="date"
+                      @keyup.enter="saveField"
+                      @keyup.escape="cancelEditing"
+                      class="text-2xl font-semibold text-primary bg-transparent border-b-2 border-accent focus:outline-none w-full"
+                      autofocus
+                    />
+                    
+                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div v-if="editingField !== 'date'" class="flex space-x-1">
+                        <button @click="startEditing('date', speech.speech_date)" class="p-1 hover:bg-accent/20 rounded">
+                          <svg class="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                          </svg>
+                        </button>
+                      </div>
+                      <div v-else class="flex space-x-1">
+                        <button @click="saveField" class="p-1 hover:bg-success/20 rounded">
+                          <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                          </svg>
+                        </button>
+                        <button @click="cancelEditing" class="p-1 hover:bg-error/20 rounded">
+                          <svg class="w-4 h-4 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                   
-                  <div class="bg-accent/10 p-4 rounded-lg">
+                  <div class="bg-accent/10 p-4 rounded-lg relative group">
                     <div class="text-sm text-muted mb-1">Format</div>
-                    <div class="text-2xl font-semibold text-primary">{{ speech.debate_format }}</div>
+                    <div v-if="editingField !== 'format'" class="text-2xl font-semibold text-primary">
+                      {{ speech.debate_format }}
+                    </div>
+                    <div v-else class="relative">
+                      <button
+                        type="button"
+                        class="flex items-center justify-between w-full text-2xl font-semibold text-primary bg-transparent border-b-2 border-accent focus:outline-none"
+                        @click="formatDropdownOpen = !formatDropdownOpen"
+                      >
+                        <span>{{ editingValue }}</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                      <div v-if="formatDropdownOpen" class="absolute top-full left-0 bg-bg border border-border rounded-lg shadow-lg p-1 min-w-[80px] mt-1 z-[9999]">
+                        <label 
+                          v-for="format in ['BP', 'WSDC']" 
+                          :key="format"
+                          :class="['flex items-center gap-1 px-1 py-1 cursor-pointer text-sm rounded hover:bg-surface-hover', editingValue === format ? 'bg-surface-hover text-primary' : 'text-muted']"
+                          @click="editingValue = format"
+                        >
+                          <input
+                            type="radio"
+                            name="format"
+                            :checked="editingValue === format"
+                            class="border-border"
+                            readonly
+                          />
+                          <span>{{ format }}</span>
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div v-if="editingField !== 'format'" class="flex space-x-1">
+                        <button @click="startEditingFormat" class="p-1 hover:bg-accent/20 rounded">
+                          <svg class="w-4 h-4 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                          </svg>
+                        </button>
+                      </div>
+                      <div v-else class="flex space-x-1">
+                        <button @click="saveField" class="p-1 hover:bg-success/20 rounded">
+                          <svg class="w-4 h-4 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                          </svg>
+                        </button>
+                        <button @click="cancelEditing" class="p-1 hover:bg-error/20 rounded">
+                          <svg class="w-4 h-4 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -249,7 +449,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getSupabaseClient } from '../lib/supabaseClient.js'
 import ChatInterface from '../components/ChatInterface.vue'
@@ -276,6 +476,11 @@ const isChatLoading = ref(false)
 const isChatTyping = ref(false)
 const conversationHistory = ref([])
 const chatContext = ref([])
+const editingField = ref(null)
+const editingValue = ref('')
+const isScrapedTournament = ref(false)
+const formatDropdownOpen = ref(false)
+const positionDropdownOpen = ref(false)
 
 const loadSpeech = async () => {
   try {
@@ -294,7 +499,7 @@ const loadSpeech = async () => {
           result,
           team_score,
           speaker1_score,
-          speaker2_score,
+          speaker2_name,
           position,
           tournament_id,
           round_id,
@@ -312,7 +517,7 @@ const loadSpeech = async () => {
         motion: r.debate_rounds?.motion || '—',
         debate_format: 'BP',
         position: r.position || '',
-        partner: null,
+        partner: r.speaker2_name || '-',
         llm_analysis: r.speaker1_score != null ? { score: Number(r.speaker1_score) } : (r.team_score != null ? { score: Number(r.team_score) } : {}),
         analysis_result: {},
         prosody_stats: null,
@@ -324,9 +529,9 @@ const loadSpeech = async () => {
       }
 
       speech.value = mapped
+      isScrapedTournament.value = true
       return
     }
-
     const { data, error } = await supabase
       .from('speeches')
       .select(`
@@ -342,6 +547,7 @@ const loadSpeech = async () => {
       ...data,
       tournament_name: data.tournaments?.name || 'Practice Session'
     }
+    isScrapedTournament.value = false
     if (data.llm_analysis?.feedback) {
       parsedFeedback.value = parseFeedback(data.llm_analysis.feedback)
     }
@@ -393,7 +599,7 @@ const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
   return new Date(dateString).toLocaleDateString('en-US', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric'
   })
 }
@@ -591,6 +797,136 @@ const saveChatContext = async () => {
   }
 }
 
+const startEditing = (field, currentValue) => {
+  editingField.value = field
+  editingValue.value = String(currentValue || '')
+}
+const cancelEditing = () => {
+  editingField.value = null
+  editingValue.value = ''
+  formatDropdownOpen.value = false
+  positionDropdownOpen.value = false
+}
+const saveField = async () => {
+  if (!speech.value || !editingField.value) return
+  
+  try {
+    const newValue = editingValue.value.trim()
+    
+    if (isScrapedTournament.value) {
+      const resultId = speech.value.id.split('_')[2]
+      let updateData = {}
+      
+      if (editingField.value === 'partner') {
+        updateData.speaker2_name = newValue
+      } else if (editingField.value === 'position') {
+        updateData.position = newValue
+      } else if (editingField.value === 'format') {
+        speech.value = { ...speech.value, debate_format: newValue }
+        cancelEditing()
+        return
+      } else if (editingField.value === 'motion') {
+        const roundId = speech.value.id.split('_')[1]
+        await supabase
+          .from('debate_rounds')
+          .update({ motion: newValue })
+          .eq('id', roundId)
+        speech.value = { ...speech.value, motion: newValue }
+        cancelEditing()
+        return
+      } else if (editingField.value === 'date') {
+        const roundId = speech.value.id.split('_')[1]
+        await supabase
+          .from('debate_rounds')
+          .update({ date: newValue })
+          .eq('id', roundId)
+        
+        speech.value = { ...speech.value, speech_date: newValue }
+        cancelEditing()
+        return
+      }
+      if (Object.keys(updateData).length > 0) {
+        const { error } = await supabase
+          .from('debate_results')
+          .update(updateData)
+          .eq('id', resultId)
+        if (error) throw error
+                if (editingField.value === 'partner') {
+          speech.value = { ...speech.value, partner: newValue }
+        } else if (editingField.value === 'position') {
+          speech.value = { ...speech.value, position: newValue }
+        }
+      }
+    } else {
+      let updateData = {}
+      
+      if (editingField.value === 'partner') {
+        updateData.partner = newValue
+      } else if (editingField.value === 'position') {
+        updateData.position = newValue
+      } else if (editingField.value === 'motion') {
+        updateData.motion = newValue
+      } else if (editingField.value === 'date') {
+        updateData.speech_date = newValue
+      } else if (editingField.value === 'format') {
+        updateData.debate_format = newValue
+      }
+      
+      const { error } = await supabase
+        .from('speeches')
+        .update(updateData)
+        .eq('id', speech.value.id)
+      
+      if (error) throw error
+      
+      const fieldKey = editingField.value === 'date' ? 'speech_date' : editingField.value
+      speech.value = { ...speech.value, [fieldKey]: newValue }
+    }
+    
+    cancelEditing()
+  } catch (error) {
+    console.error('Error saving field:', error)
+    alert('Failed to save changes. Please try again.')
+  }
+}
+
+const startEditingFormat = () => {
+  editingField.value = 'format'
+  editingValue.value = speech.value.debate_format || 'BP'
+  formatDropdownOpen.value = true
+}
+
+const startEditingPosition = () => {
+  editingField.value = 'position'
+  editingValue.value = speech.value.position || ''
+  positionDropdownOpen.value = true
+}
+
+const getValidPositions = (format) => {
+  if (format === 'BP') {
+    return [
+      { value: 'Prime Minister', label: 'Prime Minister (PM)' },
+      { value: 'Deputy Prime Minister', label: 'Deputy Prime Minister (DPM)' },
+      { value: 'Member of Government', label: 'Member of Government (MG)' },
+      { value: 'Government Whip', label: 'Government Whip (GW)' },
+      { value: 'Leader of Opposition', label: 'Leader of Opposition (LO)' },
+      { value: 'Deputy Leader of the Opposition', label: 'Deputy Leader of the Opposition (DLO)' },
+      { value: 'Member of the Opposition', label: 'Member of the Opposition (MO)' },
+      { value: 'Opposition Whip', label: 'Opposition Whip (OW)' }
+    ]
+  } else if (format === 'WSDC') {
+    return [
+      { value: 'Proposition First Speaker', label: 'Proposition First Speaker (Prop 1st)' },
+      { value: 'Proposition Second Speaker', label: 'Proposition Second Speaker (Prop 2nd)' },
+      { value: 'Proposition Third Speaker', label: 'Proposition Third Speaker (Prop 3rd)' },
+      { value: 'Opposition First Speaker', label: 'Opposition First Speaker (Opp 1st)' },
+      { value: 'Opposition Second Speaker', label: 'Opposition Second Speaker (Opp 2nd)' },
+      { value: 'Opposition Third Speaker', label: 'Opposition Third Speaker (Opp 3rd)' }
+    ]
+  }
+  return []
+}
+
 onMounted(async () => {
   supabase = await getSupabaseClient()
   loadSpeech()
@@ -637,7 +973,7 @@ onMounted(async () => {
 
 .analysis-grid {
   display: grid;
-  grid-template-columns: 0.5fr 0.7fr 0.5fr 0.8fr 1.4fr 1.2fr 0.5fr;
+  grid-template-columns: 0.5fr 0.7fr 0.5fr 0.8fr 1.4fr 1.0fr 0.7fr;
   grid-template-rows: 1fr;
 }
 </style>
