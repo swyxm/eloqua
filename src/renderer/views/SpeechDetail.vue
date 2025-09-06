@@ -905,24 +905,24 @@ const startEditingPosition = () => {
 const getValidPositions = (format) => {
   if (format === 'BP') {
     return [
-      { value: 'Prime Minister', label: 'Prime Minister (PM)' },
-      { value: 'Deputy Prime Minister', label: 'Deputy Prime Minister (DPM)' },
-      { value: 'Member of Government', label: 'Member of Government (MG)' },
-      { value: 'Government Whip', label: 'Government Whip (GW)' },
-      { value: 'Leader of Opposition', label: 'Leader of Opposition (LO)' },
-      { value: 'Deputy Leader of the Opposition', label: 'Deputy Leader of the Opposition (DLO)' },
-      { value: 'Member of the Opposition', label: 'Member of the Opposition (MO)' },
-      { value: 'Opposition Whip', label: 'Opposition Whip (OW)' }
-    ]
+      'Prime Minister',
+      'Deputy Prime Minister', 
+      'Member of Government',
+      'Government Whip',
+      'Leader of Opposition',
+      'Deputy Leader of the Opposition',
+      'Member of the Opposition',
+      'Opposition Whip'
+    ].map(pos => ({ value: pos, label: mapPosition(pos) }))
   } else if (format === 'WSDC') {
     return [
-      { value: 'Proposition First Speaker', label: 'Proposition First Speaker (Prop 1st)' },
-      { value: 'Proposition Second Speaker', label: 'Proposition Second Speaker (Prop 2nd)' },
-      { value: 'Proposition Third Speaker', label: 'Proposition Third Speaker (Prop 3rd)' },
-      { value: 'Opposition First Speaker', label: 'Opposition First Speaker (Opp 1st)' },
-      { value: 'Opposition Second Speaker', label: 'Opposition Second Speaker (Opp 2nd)' },
-      { value: 'Opposition Third Speaker', label: 'Opposition Third Speaker (Opp 3rd)' }
-    ]
+      'Proposition First Speaker',
+      'Proposition Second Speaker', 
+      'Proposition Third Speaker',
+      'Opposition First Speaker',
+      'Opposition Second Speaker',
+      'Opposition Third Speaker'
+    ].map(pos => ({ value: pos, label: mapPosition(pos) }))
   }
   return []
 }
