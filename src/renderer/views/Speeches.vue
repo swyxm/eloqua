@@ -216,15 +216,23 @@
       </div>
 
       <div v-if="viewMode === 'tournaments'" class="space-y-6">
-        <div class="text-center py-12">
+        <div v-if="tournaments.length === 0" class="text-center py-12">
           <div class="w-24 h-24 bg-surface rounded-lg flex items-center justify-center mx-auto mb-6 border border-border">
             <svg class="w-12 h-12 text-primary" fill="currentColor" viewBox="0 0 20 20">
               <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"></path>
             </svg>
           </div>
-          <h3 class="text-2xl font-bold text-primary mb-2">Tournament Organization</h3>
-          <p class="text-muted">Group and manage speeches by tournament</p>
-          <p class="text-sm text-muted mt-2">Coming soon...</p>
+          <h3 class="text-xl font-semibold text-primary mb-2">No Tournaments Found</h3>
+          <p class="text-sm text-muted mt-2">Use the Tabbycat Scraper or manually import your tournament data.</p>
+        </div>
+        
+        <div v-else class="grid gap-6">
+          <TournamentCard
+            v-for="tournament in tournaments"
+            :key="tournament.id"
+            :tournament="tournament"
+            :stats="tournament.stats"
+          />
         </div>
       </div>
 
@@ -331,6 +339,7 @@ import { useRouter } from 'vue-router'
 import { store } from '../store.js'
 import { getSupabaseClient } from '../lib/supabaseClient.js'
 import SpeechCard from '../components/SpeechCard.vue'
+import TournamentCard from '../components/TournamentCard.vue'
 import EloquaLogo from '../components/EloquaLogo.vue'
 import { MicVocal, Trophy, Target, Calendar, Clock, CalendarDays, BarChart3 } from 'lucide-vue-next'
 import { renderMarkdown } from '../../shared/utils/markdownRenderer.js'
@@ -339,6 +348,7 @@ const router = useRouter()
 let supabase
 
 const speeches = ref([])
+const tournaments = ref([])
 const isLoading = ref(true)
 const showSuccessMessage = ref(false)
 const viewMode = ref('timeline')
@@ -671,7 +681,68 @@ const parseFeedback = (feedback) => {
   return sections
 }
 
+const loadTournaments = async () => {
+  try {
+    // Load tournaments with their stats
+    const { data: tournamentData, error: tournamentError } = await supabase
+      .from('tournaments')
+      .select(`
+        *,
+        debate_results(
+          id,
+          result,
+          speaker1_score,
+          team_score,
+          debate_rounds!inner(
+            id,
+            round
+          )
+        )
+      `)
+      .order('start_date', { ascending: false })
 
+    if (tournamentError) throw tournamentError
+
+    // Calculate stats for each tournament
+    tournaments.value = (tournamentData || []).map(tournament => {
+      const rounds = tournament.debate_results || []
+      const totalRounds = rounds.length
+      
+      // Calculate points based on place in round (1st = 3pts, 2nd = 2pts, etc.)
+      const totalPoints = rounds.reduce((sum, round) => {
+        const place = round.result
+        if (place === 1) return sum + 3
+        if (place === 2) return sum + 2
+        if (place === 3) return sum + 1
+        return sum + 0
+      }, 0)
+      
+      // Calculate average speaker score
+      const scores = rounds
+        .map(round => round.speaker1_score || round.team_score)
+        .filter(score => score != null)
+      const totalScore = scores.reduce((sum, score) => sum + Number(score), 0)
+      const averageScore = scores.length > 0 ? totalScore / scores.length : 0
+      
+      const firstPlaces = rounds.filter(round => round.result === 1).length
+      const secondPlaces = rounds.filter(round => round.result === 2).length
+
+      return {
+        ...tournament,
+        stats: {
+          totalRounds,
+          totalPoints,
+          averageScore,
+          firstPlaces,
+          secondPlaces
+        }
+      }
+    })
+
+  } catch (error) {
+    console.error('Error loading tournaments:', error)
+  }
+}
 
 watch([searchQuery, filters, sortBy], () => {
   currentPage.value = 1
@@ -682,6 +753,7 @@ watch([searchQuery, filters, sortBy], () => {
 onMounted(async () => {
   supabase = await getSupabaseClient()
   loadSpeeches()
+  loadTournaments()
   
   if (store.analysisData) {
     showSuccessMessage.value = true
