@@ -8,12 +8,7 @@
             </div>
         </div>
 
-        <div v-if="isLoading" class="flex justify-center items-center py-16">
-            <div class="relative">
-            <div class="w-10 h-10 border-4 border-surface-hover rounded-full"></div>
-            <div class="absolute top-0 left-0 w-10 h-10 border-4 border-transparent border-t-accent rounded-full animate-spin"></div>
-            </div>
-        </div>
+        <Loader v-if="isLoading" />
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div class="bg-card backdrop-blur-md rounded-xl shadow-lg border border-border p-6">
@@ -104,15 +99,8 @@
                 </div>
                 </div>
 
-        <div v-if="isLoading" class="flex justify-center items-center py-16">
-            <div class="relative">
-            <div class="w-10 h-10 border-3 border-surface-hover rounded-full"></div>
-            <div class="absolute top-0 left-0 w-10 h-10 border-3 border-transparent border-t-accent rounded-full animate-spin"></div>
-            </div>
-            </div>
-        
         <div 
-            v-else
+            v-if="!isLoading"
             ref="statsContainer"
             class="grid grid-cols-12 gap-6 auto-rows-min"
         >
@@ -360,6 +348,7 @@ import ProgressRing from '../../shared/components/ProgressRing.vue'
 import StatCard from '../components/StatCard.vue'
 import Filter from '../components/Filter.vue'
 import ChartLegend from '../components/ChartLegend.vue'
+import Loader from '../components/LoadingState.vue' 
 import { MicVocal, TrendingUp, ChevronsUp, ChevronUp, ChevronsDown, ChevronDown, Clock, RefreshCw, Trophy } from 'lucide-vue-next'
 
     let supabase

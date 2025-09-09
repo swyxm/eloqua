@@ -13,12 +13,7 @@
         </router-link>
       </div>
 
-      <div v-if="isLoading" class="flex justify-center items-center py-16">
-        <div class="relative">
-          <div class="w-10 h-10 border-4 border-surface-hover rounded-full"></div>
-          <div class="absolute top-0 left-0 w-10 h-10 border-4 border-transparent border-t-accent rounded-full animate-spin"></div>
-        </div>
-      </div>
+      <Loader v-if="isLoading" />
 
       <div v-else-if="!speech" class="text-center py-16">
         <div class="w-16 h-16 mx-auto mb-6 bg-error/10 rounded-lg flex items-center justify-center">
@@ -456,6 +451,7 @@ import ChatInterface from '../components/ChatInterface.vue'
 import { mapPosition } from '../../shared/utils/positionMapping.js'
 import { renderMarkdown } from '../../shared/utils/markdownRenderer.js'
 import ProgressRing from '../../shared/components/ProgressRing.vue'
+import Loader from '../components/LoadingState.vue'
 
 const route = useRoute()
 const router = useRouter()

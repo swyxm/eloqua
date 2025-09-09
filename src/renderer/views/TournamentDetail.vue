@@ -13,12 +13,7 @@
         </router-link>
       </div>
 
-      <div v-if="isLoading" class="flex justify-center items-center py-16">
-        <div class="relative">
-          <div class="w-10 h-10 border-4 border-surface-hover rounded-full"></div>
-          <div class="absolute top-0 left-0 w-10 h-10 border-4 border-transparent border-t-accent rounded-full animate-spin"></div>
-        </div>
-      </div>
+      <Loader v-if="isLoading" />
 
       <div v-else-if="!tournament" class="text-center py-16">
         <div class="text-6xl mb-4">🏆</div>
@@ -132,6 +127,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getSupabaseClient } from '../lib/supabaseClient.js'
 import { mapPosition } from '../../shared/utils/positionMapping.js'
+import Loader from '../components/LoadingState.vue'
 
 const route = useRoute()
 const router = useRouter()
