@@ -333,6 +333,7 @@
               <tr class="border-b border-border">
                 <th class="text-left p-2 text-muted font-medium">Round</th>
                 <th class="text-left p-2 text-muted font-medium">Motion</th>
+                <th class="text-left p-2 text-muted font-medium">Position</th>
                 <th class="text-left p-2 text-muted font-medium">Speaker Score</th>
                 <th class="text-left p-2 text-muted font-medium">Team Result</th>
                 <th class="text-left p-2 text-muted font-medium">Team Points</th>
@@ -373,6 +374,24 @@
                       rows="2"
                       v-focus
                     ></textarea>
+                  </div>
+                </td>
+                <td class="p-2">
+                  <div 
+                    @dblclick="startEditSpeech(speech, 'position')"
+                    class="cursor-pointer hover:bg-background/50 px-2 py-1 rounded"
+                  >
+                    <span v-if="!speech.editing || speech.editing !== 'position'">{{ speech.position || 'N/A' }}</span>
+                    <select 
+                      v-else
+                      v-model="speech.position" 
+                      @blur="finishEditSpeech(speech, 'position')"
+                      @change="finishEditSpeech(speech, 'position')"
+                      class="w-full px-2 py-1 text-sm bg-background border border-border rounded"
+                      v-focus
+                    >
+                      <option v-for="option in positionOptions" :key="option" :value="option">{{ option }}</option>
+                    </select>
                   </div>
                 </td>
                 <td class="p-2">
@@ -441,6 +460,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { getSupabaseClient } from '../lib/supabaseClient.js'
+import { mapPosition } from '../../shared/utils/positionMapping.js'
 
 const emit = defineEmits(['scrape-started', 'scrape-completed'])
 
@@ -476,11 +496,27 @@ const editableGeneral = ref({
 })
 const generalEditing = ref(null)
 
+const positionOptions = ref([
+  'N/A',
+  'PM',
+  'LO', 
+  'DPM',
+  'DLO',
+  'MG',
+  'MO',
+  'GW',
+  'OW',
+  'Prop 1st',
+  'Prop 2nd', 
+  'Prop 3rd',
+  'Opp 1st',
+  'Opp 2nd',
+  'Opp 3rd'
+])
 
 const populateEditableRounds = () => {
   if (!lastScrapeInfo.value?.roundResults) return
   
-  // Populate general info
   editableGeneral.value.tournamentName = lastScrapeInfo.value.tournament || ''
   editableGeneral.value.debaterName = lastScrapeInfo.value.debaterName || ''
   editableGeneral.value.speakerRank = lastScrapeInfo.value.speakerStats?.rank ?? lastScrapeInfo.value.speakerRank ?? null
@@ -492,7 +528,6 @@ const populateEditableRounds = () => {
   editableGeneral.value.teamTotalPoints = lastScrapeInfo.value.teamStats?.total_points ?? null
   editableGeneral.value.teamTotalSpeakerScore = lastScrapeInfo.value.teamStats?.total_speaker_score ?? null
   
-  // Populate rounds data
   editableRounds.value = lastScrapeInfo.value.roundResults.map(round => ({
     round: round.round || '',
     motion: round.motion || '',
@@ -501,15 +536,15 @@ const populateEditableRounds = () => {
     teamResult: round.placement || '',
     teamPoints: round.team_points || '',
     teamSpeakerScore: round.team_debate_score || '',
-    editing: null // Track which field is being edited
+    editing: null 
   }))
   
-  // Populate speeches data
   if (lastScrapeInfo.value.speeches) {
     editableSpeeches.value = lastScrapeInfo.value.speeches.map(speech => ({
       ...speech,
       team_points: speech.team_points ?? getPointsForPlacement(speech.team_placement),
-      editing: null // Track which field is being edited
+      position: speech.position || 'N/A', 
+      editing: null
     }))
   }
 }
@@ -532,8 +567,6 @@ const finishEditGeneral = (field) => {
   generalEditing.value = null
 }
 
-// Compute a content-based width in ch units for inline inputs
-// Ensures fields flex to their content up to a bounded max width
 const computeWidthCh = (value, minCh = 6, maxCh = 40) => {
   const str = (value ?? '').toString()
   const len = str.length > 0 ? str.length : minCh
@@ -542,11 +575,11 @@ const computeWidthCh = (value, minCh = 6, maxCh = 40) => {
 }
 
 const startEditSpeech = (speech, field) => {
-  // Stop editing any other fields
   editableSpeeches.value.forEach(s => s.editing = null)
   speech.editing = field
 }
-// Map team placement to points
+
+//todo: move to utils + wsdc compatability.
 const getPointsForPlacement = (placement) => {
   switch ((placement || '').toString().toLowerCase()) {
     case '1st':
@@ -572,7 +605,6 @@ const getPointsForPlacement = (placement) => {
 
 const finishEditSpeech = (speech, field) => {
   speech.editing = null
-  // Auto-map team points when team placement changes
   if (field === 'team_placement') {
     speech.team_points = getPointsForPlacement(speech.team_placement)
   }
@@ -586,6 +618,7 @@ const addRoundRow = () => {
   editableSpeeches.value.push({
     round: String(nextRound),
     motion: '',
+    position: 'N/A',
     speaker_score: null,
     team_placement: '',
     team_points: null,
@@ -606,7 +639,6 @@ const saveToDatabase = async () => {
   const normalizeDate = (d) => {
     if (!d) return null
     try {
-      // if already yyyy-mm-dd
       if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return d
       const dt = new Date(d)
       if (Number.isNaN(dt.getTime())) return null
@@ -643,7 +675,6 @@ const saveToDatabase = async () => {
     const tournamentId = tournamentInserted?.id
     if (!tournamentId) throw new Error('Failed to resolve tournament id')
 
-    // 2) Clear existing rounds/results for this tournament to avoid duplicates
     const { error: delResultsErr } = await supabase
       .from('debate_results')
       .delete()
@@ -656,7 +687,6 @@ const saveToDatabase = async () => {
       .eq('tournament_id', tournamentId)
     if (delRoundsErr) throw delRoundsErr
 
-    // 3) Insert rounds (unique by round label)
     const roundsUnique = []
     const seen = new Set()
     for (const s of editableSpeeches.value) {
@@ -684,19 +714,21 @@ const saveToDatabase = async () => {
       }, {})
     }
 
-    // 4) Insert results per speech row
     const resultsRows = editableSpeeches.value.map((s) => {
       const roundLabel = String(s.round ?? '').trim()
       const roundId = roundIdByLabel[roundLabel] || null
       const teamScore = (s.team_debate_score != null && s.team_debate_score !== '')
         ? Number(s.team_debate_score)
         : (getPointsForPlacement(s.team_placement) ?? (s.team_points != null ? Number(s.team_points) : null))
+      
+      const positionValue = s.position && s.position !== 'N/A' ? mapPosition(s.position) : null
+      
       return {
         round_id: roundId,
         tournament_id: tournamentId,
         speaker1_name: debaterNameFinal || null,
         speaker2_name: partnerNameFinal || null,
-        position: null,
+        position: positionValue,
         result: s.team_placement || null,
         team_score: teamScore,
         speaker1_score: (s.speaker_score != null && s.speaker_score !== '') ? Number(s.speaker_score) : null,
@@ -711,7 +743,6 @@ const saveToDatabase = async () => {
       if (insResErr) throw insResErr
     }
 
-    // 5) Upsert team overall statistics
     const teamStatsRow = {
       tournament_id: tournamentId,
       team_name: (editableGeneral.value.teamName || lastScrapeInfo.value?.teamInfo?.team_name || null),
@@ -721,7 +752,6 @@ const saveToDatabase = async () => {
       first_places: null,
       second_places: null
     }
-    // simple upsert by tournament_id
     const { error: teamStatsErr } = await supabase
       .from('team_statistics')
       .upsert(teamStatsRow, { onConflict: 'tournament_id' })
@@ -740,7 +770,6 @@ const startScraping = async () => {
   if (!tabbycatUrl.value || !firstName.value || !lastName.value) return
 
   isScraping.value = true
-  // Reset editable data
   editableRounds.value = []
   editableSpeeches.value = []
   editableGeneral.value = {
@@ -771,8 +800,6 @@ const startScraping = async () => {
 
     const payload = JSON.parse(JSON.stringify(scrapeData))
 
-    // This will call our Python backend scraper
-    // Use the most compatible bridge available
     const hasElectronInvoke = !!(window.electron && window.electron.ipcRenderer && window.electron.ipcRenderer.invoke)
     const hasElectronAPI = !!(window.electronAPI && (window.electronAPI.scrapeTabbycat || window.electronAPI.invoke))
     let result
@@ -793,7 +820,6 @@ const startScraping = async () => {
         speechesFound: result.data.speechesFound || 0,
         speakerRank: result.data.speakerRank,
         teamRank: result.data.teamRank,
-        // Enhanced data from rawData
         speakerStats: result.data.rawData?.speaker_stats || {},
         teamInfo: result.data.rawData?.team_info || {},
         teamStats: result.data.rawData?.team_stats || {},
@@ -804,22 +830,13 @@ const startScraping = async () => {
         date: new Date().toISOString()
       }
 
-      // Populate editable rounds
       populateEditableRounds()
-
-      // Surface debug log if present
-      if (Array.isArray(result.data.debugLog) && result.data.debugLog.length) {
-        console.group('Tabbycat Scraper Debug Log')
-        result.data.debugLog.forEach(l => console.log(l))
-        console.groupEnd()
-      }
 
       emit('scrape-completed', {
         success: true,
         data: result.data
       })
 
-      // Reset form
       tabbycatUrl.value = ''
       firstName.value = ''
       lastName.value = ''
@@ -831,16 +848,9 @@ const startScraping = async () => {
     }
 
   } catch (error) {
-    console.error('Scraping error:', error)
-    if (error && error.debug && Array.isArray(error.debug)) {
-      console.group('Tabbycat Scraper Debug Log (error)')
-      error.debug.forEach(l => console.log(l))
-      console.groupEnd()
-    }
-    
+  
     emit('scrape-completed', {
       success: false,
-      error: error.message
     })
   }
   isScraping.value = false
@@ -848,7 +858,6 @@ const startScraping = async () => {
 </script>
 
 <style scoped>
-/* Remove the custom cursor override */
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1);
 }
