@@ -293,7 +293,6 @@ function registerIpcHandlers() {
       
       const whisperModel = store.get('whisperModel', 'small');
       const result = await speechAnalyzer.analyze(audioPath, motion, format, position, placeInRound, specificFeedback);
-      console.log('Analysis result:', result);
       return { success: true, result };
     } catch (error) {
       console.error('Speech analysis error:', error);

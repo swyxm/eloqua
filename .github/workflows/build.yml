@@ -63,12 +63,8 @@ jobs:
       uses: actions/github-script@v6
       with:
         script: |
-          try {
-            console.log('Starting asset cleanup...');
-            
-            // Check if we have the right permissions
+          try {            
             if (!context.token) {
-              console.log('No token available, skipping cleanup');
               return;
             }
             
@@ -79,7 +75,6 @@ jobs:
             });
             
             if (!release.data) {
-              console.log('No release found, skipping cleanup');
               return;
             }
             
@@ -92,7 +87,6 @@ jobs:
             let cleanedCount = 0;
             for (const asset of assets.data) {
               if (["locale.pak", "Electron Framework", "snapshot_blob.bin", "v8_context_snapshot.bin"].includes(asset.name)) {
-                console.log(`Deleting problematic asset: ${asset.name}`);
                 await github.rest.repos.deleteReleaseAsset({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
@@ -101,10 +95,7 @@ jobs:
                 cleanedCount++;
               }
             }
-            console.log(`Asset cleanup completed. Cleaned ${cleanedCount} assets.`);
           } catch (error) {
-            console.log('Asset cleanup failed (non-critical):', error.message);
-            console.log('Continuing with release creation...');
           }
         
     - name: Create Release

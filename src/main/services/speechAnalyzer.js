@@ -83,10 +83,7 @@ class SpeechAnalyzer {
 
       pythonProcess.on('close', (code) => {
         clearTimeout(timeoutId);
-        console.log('Python process closed with code:', code);
-        if (error) console.error('Python stderr:', error);
-        if (output) console.log('Python stdout (tail):', output.split('\n').slice(-5).join('\n'));
-        
+        if (error) console.error('Python stderr:', error);        
         if (code === 0) {
           try {
             try {

@@ -32,7 +32,7 @@
 
         <IngestCard 
           title="Add Tournament" 
-          :grid-span="3"
+          :grid-span="12"
           icon="trophy"
         >
           <TournamentIngest @tournament-added="onTournamentAdded" />
