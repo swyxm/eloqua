@@ -38,6 +38,10 @@ scikit-learn
 # reqs & api calls
 requests
 urllib3
+beautifulsoup4
+googlesearch-python
+langgraph
+langchain-google-genai
 
 # config
 python-dotenv

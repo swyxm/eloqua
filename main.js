@@ -10,18 +10,10 @@ try {
   SpeechAnalyzer = require('./src/main/services/speechAnalyzer.js');
   debateCoach = require('./src/main/services/debateCoach.js');
   speechAnalyzer = new SpeechAnalyzer();
-  
-  if (debateCoach && typeof debateCoach.getChatResponse === 'function') {  
-    debateCoach.getChatResponse(
-      { motion: 'test', debate_format: 'BP', position: 'PM', score: 75, duration: 120, llm_feedback: 'test' },
-      'test message',
-      []
-    ).then(response => {
-    }).catch(error => {
-    });
-  }
 } catch (error) {
-  console.error('Failed to load services:', error.message);}
+  console.error('Failed to load services:', error.message);
+}
+
 const fileService = {
   selectAudioFile: async () => {
     const { dialog } = require('electron');
@@ -61,8 +53,10 @@ loadSettingsToEnv();
 
 
 
+let mainWindow;
+
 function createWindow() {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
     webPreferences: {
@@ -324,15 +318,27 @@ function registerIpcHandlers() {
         pythonScript = path.join(__dirname, 'src', 'main', 'python', 'tabbycat_scraper.py');
       }
       
+      let runner;
+      if (app.isPackaged) {
+        const binDir = path.join(process.resourcesPath, 'bin');
+        if (process.platform === 'win32') {
+          runner = path.join(binDir, 'win', 'tabbycat_scraper.exe');
+        } else if (process.platform === 'darwin') {
+          runner = path.join(binDir, 'mac', 'tabbycat_scraper');
+        } else {
+          runner = path.join(binDir, 'linux', 'tabbycat_scraper');
+        }
+      }
+      const useBundled = runner && require('fs').existsSync(runner);
+      let pythonExecutable = process.env.PYTHON_EXECUTABLE;
+      if (!pythonExecutable) pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
+      
       if (!require('fs').existsSync(pythonScript)) {
         return { success: false, error: 'Tabbycat scraper script not found' };
       }
       
-      const pythonPath = process.platform === 'win32' ? 'python' : 'python3';
-      
       return new Promise((resolve, reject) => {
         const args = [
-          pythonScript, 
           scrapeData.url,
           scrapeData.firstName,
           scrapeData.lastName
@@ -344,7 +350,10 @@ function registerIpcHandlers() {
           args.push('');
         }
       
-        const pythonProcess = spawn(pythonPath, args);
+        const cmdArgs = useBundled ? args : [pythonScript, ...args];
+        const cmd = useBundled ? runner : pythonExecutable;
+
+        const pythonProcess = spawn(cmd, cmdArgs);
         let outputData = '';
         let errorData = '';
         
@@ -379,17 +388,124 @@ function registerIpcHandlers() {
       return { success: false, error: error.message };
     }
   });
+
+  function getPrepAgentCmd(extraArgs) {
+    let pythonScript;
+    if (app.isPackaged) {
+      pythonScript = path.join(process.resourcesPath, 'python', 'prep_agent.py');
+    } else {
+      pythonScript = path.join(__dirname, 'src', 'main', 'python', 'prep_agent.py');
+    }
+    
+    let runner;
+    if (app.isPackaged) {
+      const binDir = path.join(process.resourcesPath, 'bin');
+      if (process.platform === 'win32') {
+        runner = path.join(binDir, 'win', 'prep_agent.exe');
+      } else if (process.platform === 'darwin') {
+        runner = path.join(binDir, 'mac', 'prep_agent');
+      } else {
+        runner = path.join(binDir, 'linux', 'prep_agent');
+      }
+    }
+    
+    const useBundled = runner && require('fs').existsSync(runner);
+    const pythonExecutable = process.env.PYTHON_EXECUTABLE || (process.platform === 'win32' ? 'python' : 'python3');
+    
+    if (!useBundled && !require('fs').existsSync(pythonScript)) {
+      return null;
+    }
+    
+    const cmd = useBundled ? runner : pythonExecutable;
+    const baseArgs = useBundled ? [] : [pythonScript];
+    return { cmd, args: [...baseArgs, ...extraArgs] };
+  }
+  
+  function getPrepEnv() {
+    return { 
+      ...process.env,
+      GEMINI_API_KEY: process.env.GEMINI_API_KEY || store.get('geminiApiKey')
+    };
+  }
+
+  // Phase 1: Plan only — returns search queries
+  ipcMain.handle('prep-plan', async (event, motion, side) => {
+    try {
+      const cmdInfo = getPrepAgentCmd([motion, '--mode', 'plan', '--side', side || 'proposition']);
+      if (!cmdInfo) return { success: false, error: 'Prep Agent script not found' };
+      
+      return new Promise((resolve) => {
+        const pythonProcess = spawn(cmdInfo.cmd, cmdInfo.args, { env: getPrepEnv() });
+        let outputData = '';
+        let errorData = '';
+        
+        pythonProcess.stdout.on('data', (data) => { outputData += data.toString(); });
+        pythonProcess.stderr.on('data', (data) => { errorData += data.toString(); });
+        
+        pythonProcess.on('close', (code) => {
+          if (code === 0) {
+            try { resolve(JSON.parse(outputData)); }
+            catch (e) { resolve({ success: false, error: `Parse error: ${e.message}` }); }
+          } else {
+            resolve({ success: false, error: `Plan failed (code ${code}): ${errorData}` });
+          }
+        });
+        pythonProcess.on('error', (err) => {
+          resolve({ success: false, error: `Failed to start: ${err.message}` });
+        });
+      });
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Phase 2: Research + Draft — takes user-confirmed queries
+  ipcMain.handle('prep-research', async (event, motion, queries, side) => {
+    try {
+      const queriesJson = JSON.stringify(queries);
+      const cmdInfo = getPrepAgentCmd([motion, '--mode', 'research', '--queries', queriesJson, '--side', side || 'proposition']);
+      if (!cmdInfo) return { success: false, error: 'Prep Agent script not found' };
+      
+      return new Promise((resolve) => {
+        const pythonProcess = spawn(cmdInfo.cmd, cmdInfo.args, { env: getPrepEnv() });
+        let outputData = '';
+        
+        pythonProcess.stdout.on('data', (data) => { outputData += data.toString(); });
+        
+        pythonProcess.stderr.on('data', (data) => {
+          const lines = data.toString().split('\n').filter(l => l.trim());
+          for (const line of lines) {
+            try {
+              const progress = JSON.parse(line);
+              if (mainWindow && mainWindow.webContents) {
+                mainWindow.webContents.send('prep-progress', progress);
+              }
+            } catch (e) {
+            }
+          }
+        });
+        
+        pythonProcess.on('close', (code) => {
+          if (code === 0) {
+            try { resolve(JSON.parse(outputData)); }
+            catch (e) { resolve({ success: false, error: `Parse error: ${e.message}` }); }
+          } else {
+            resolve({ success: false, error: `Research failed (code ${code})` });
+          }
+        });
+        pythonProcess.on('error', (err) => {
+          resolve({ success: false, error: `Failed to start: ${err.message}` });
+        });
+      });
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
 }
 
 app.whenReady().then(() => {
   registerIpcHandlers();
-  
-  if (app.isPackaged) {
-    const pythonDir = path.join(process.resourcesPath, 'python');
-    const transcribeScript = path.join(pythonDir, 'transcribe.py');
-    const speechAnalyzerScript = path.join(pythonDir, 'speech_analyzer.py');
-  }
-  
   createWindow();
 });
 

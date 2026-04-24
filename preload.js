@@ -11,7 +11,9 @@ contextBridge.exposeInMainWorld('electron', {
         'get-settings',
         'save-settings',
         'install-whisper-model',
-        'scrape-tabbycat'
+        'scrape-tabbycat',
+        'prep-plan',
+        'prep-research'
       ];
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, ...args);
@@ -28,6 +30,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getSettings: () => ipcRenderer.invoke('get-settings'),
   saveSettings: (settings) => ipcRenderer.invoke('save-settings', settings),
   scrapeTabbycat: (data) => ipcRenderer.invoke('scrape-tabbycat', data),
+  prepPlan: (motion, side) => ipcRenderer.invoke('prep-plan', motion, side),
+  prepResearch: (motion, queries, side) => ipcRenderer.invoke('prep-research', motion, queries, side),
+  onPrepProgress: (cb) => {
+    ipcRenderer.removeAllListeners('prep-progress');
+    ipcRenderer.on('prep-progress', (_event, data) => cb?.(data));
+  },
+  offPrepProgress: () => {
+    ipcRenderer.removeAllListeners('prep-progress');
+  },
   onWhisperInstallProgress: (cb) => {
     ipcRenderer.removeAllListeners('whisper-install-progress')
     ipcRenderer.on('whisper-install-progress', (_event, data) => cb?.(data))

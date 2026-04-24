@@ -12,6 +12,7 @@ import SpeechDetail from './renderer/views/SpeechDetail.vue';
 import Stats from './renderer/views/Stats.vue';
 import DataIngest from './renderer/views/DataIngest.vue';
 import TournamentDetail from './renderer/views/TournamentDetail.vue';
+import PrepAgentView from './renderer/views/PrepAgentView.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Upload },
@@ -19,7 +20,8 @@ const routes = [
   { path: '/speech/:id', name: 'SpeechDetail', component: SpeechDetail },
   { path: '/tournament/:id', name: 'TournamentDetail', component: TournamentDetail },
   { path: '/stats', name: 'Stats', component: Stats },
-  { path: '/ingest', name: 'DataIngest', component: DataIngest }
+  { path: '/ingest', name: 'DataIngest', component: DataIngest },
+  { path: '/prep', name: 'PrepAgent', component: PrepAgentView }
 ]
 
 const history = import.meta.env.MODE === 'development'
