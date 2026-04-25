@@ -245,22 +245,15 @@ function registerIpcHandlers() {
         SUPABASE_URL: process.env.SUPABASE_URL,
         SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
       };
-      
-      const args = useBundled ? [audioPath, whisperModel] : [pythonScript, audioPath, whisperModel];
-      const cmd = useBundled ? runner : pythonExecutable;
-      
-      const env = { 
-        ...process.env,
-        GEMINI_API_KEY: process.env.GEMINI_API_KEY,
-        SUPABASE_URL: process.env.SUPABASE_URL,
-        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
-      };
 
       if (app.isPackaged) {
         const binDir = path.join(process.resourcesPath, 'bin', process.platform === 'win32' ? 'win' : (process.platform === 'darwin' ? 'mac' : 'linux'));
         const pathVar = process.platform === 'win32' ? 'Path' : 'PATH';
         env[pathVar] = `${binDir}${path.delimiter}${process.env[pathVar] || ''}`;
       }
+      
+      const args = useBundled ? [audioPath, whisperModel] : [pythonScript, audioPath, whisperModel];
+      const cmd = useBundled ? runner : pythonExecutable;
 
       const pythonProcess = spawn(cmd, args, { env });
 
