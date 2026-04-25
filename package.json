@@ -67,7 +67,7 @@
     "publish": null,
     "mac": {
       "target": [
-        "zip"
+        "dmg"
       ],
       "identity": null,
       "icon": "build/icon.icns",

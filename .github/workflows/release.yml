@@ -42,19 +42,8 @@ jobs:
         sudo rm -rf /opt/hostedtoolcache
         docker image prune -a -f || true
 
-    - name: Install FFmpeg (Windows)
-      if: runner.os == 'Windows'
+    - name: Install FFmpeg (static build)
       uses: FedericoCarboni/setup-ffmpeg@v3
-    
-    - name: Install FFmpeg (macOS)
-      if: runner.os == 'macOS'
-      run: brew install ffmpeg
-      
-    - name: Install FFmpeg (Linux)
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ffmpeg
 
     - name: Install Python dependencies
       run: |
@@ -102,7 +91,6 @@ jobs:
         Copy-Item -Recurse dist/tabbycat_scraper resources/bin/win/
         Copy-Item -Recurse dist/prep_agent resources/bin/win/
         Copy-Item (Get-Command ffmpeg.exe).Source resources/bin/win/
-        Copy-Item (Get-Command ffprobe.exe).Source resources/bin/win/
 
     - name: Stage Binaries (macOS)
       if: runner.os == 'macOS'
@@ -115,7 +103,7 @@ jobs:
         cp -r dist/tabbycat_scraper resources/bin/mac/
         cp -r dist/prep_agent resources/bin/mac/
         cp "$(which ffmpeg)" resources/bin/mac/
-        cp "$(which ffprobe)" resources/bin/mac/
+        chmod -R +x resources/bin/mac/
 
     - name: Stage Binaries (Linux)
       if: runner.os == 'Linux'
@@ -128,7 +116,7 @@ jobs:
         cp -r dist/tabbycat_scraper resources/bin/linux/
         cp -r dist/prep_agent resources/bin/linux/
         cp "$(which ffmpeg)" resources/bin/linux/
-        cp "$(which ffprobe)" resources/bin/linux/
+        chmod -R +x resources/bin/linux/
 
     - name: Install dependencies
       run: npm ci
