@@ -36,9 +36,9 @@ class DebateCoachService {
       let runner;
       if (process && process.resourcesPath) {
         const binDir = path.join(process.resourcesPath, 'bin');
-        if (process.platform === 'win32') runner = path.join(binDir, 'win', 'debate_chat.exe');
-        else if (process.platform === 'darwin') runner = path.join(binDir, 'mac', 'debate_chat');
-        else runner = path.join(binDir, 'linux', 'debate_chat');
+        if (process.platform === 'win32') runner = path.join(binDir, 'win', 'debate_chat', 'debate_chat.exe');
+        else if (process.platform === 'darwin') runner = path.join(binDir, 'mac', 'debate_chat', 'debate_chat');
+        else runner = path.join(binDir, 'linux', 'debate_chat', 'debate_chat');
       }
       const useBundled = runner && fs.existsSync(runner);
       let pythonExecutable = process.env.PYTHON_EXECUTABLE;
@@ -50,6 +50,12 @@ class DebateCoachService {
         SUPABASE_URL: process.env.SUPABASE_URL,
         SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
       };
+
+      if (process.resourcesPath) {
+        const binDir = path.join(process.resourcesPath, 'bin', process.platform === 'win32' ? 'win' : (process.platform === 'darwin' ? 'mac' : 'linux'));
+        const pathVar = process.platform === 'win32' ? 'Path' : 'PATH';
+        env[pathVar] = `${binDir}${path.delimiter}${process.env[pathVar] || ''}`;
+      }
 
       const cmd = useBundled ? runner : pythonExecutable;
       const args = useBundled ? [speechDataJson, userMessage, conversationHistoryJson] : [scriptPath, speechDataJson, userMessage, conversationHistoryJson];

@@ -133,11 +133,11 @@ function registerIpcHandlers() {
       if (app.isPackaged) {
         const binDir = path.join(process.resourcesPath, 'bin');
         if (process.platform === 'win32') {
-          runner = path.join(binDir, 'win', 'model_manager.exe');
+          runner = path.join(binDir, 'win', 'model_manager', 'model_manager.exe');
         } else if (process.platform === 'darwin') {
-          runner = path.join(binDir, 'mac', 'model_manager');
+          runner = path.join(binDir, 'mac', 'model_manager', 'model_manager');
         } else {
-          runner = path.join(binDir, 'linux', 'model_manager');
+          runner = path.join(binDir, 'linux', 'model_manager', 'model_manager');
         }
       }
       const useBundled = runner && require('fs').existsSync(runner);
@@ -154,6 +154,13 @@ function registerIpcHandlers() {
         SUPABASE_URL: process.env.SUPABASE_URL,
         SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
       };
+
+      // Add bundled bin directory to PATH so Python can find ffmpeg/ffprobe
+      if (app.isPackaged) {
+        const binDir = path.join(process.resourcesPath, 'bin', process.platform === 'win32' ? 'win' : (process.platform === 'darwin' ? 'mac' : 'linux'));
+        const pathVar = process.platform === 'win32' ? 'Path' : 'PATH';
+        env[pathVar] = `${binDir}${path.delimiter}${process.env[pathVar] || ''}`;
+      }
       
       const args = useBundled ? [modelName, 'install'] : [pythonScript, modelName, 'install'];
       const cmd = useBundled ? runner : pythonExecutable;
@@ -215,11 +222,11 @@ function registerIpcHandlers() {
       if (app.isPackaged) {
         const binDir = path.join(process.resourcesPath, 'bin');
         if (process.platform === 'win32') {
-          runner = path.join(binDir, 'win', 'transcribe.exe');
+          runner = path.join(binDir, 'win', 'transcribe', 'transcribe.exe');
         } else if (process.platform === 'darwin') {
-          runner = path.join(binDir, 'mac', 'transcribe');
+          runner = path.join(binDir, 'mac', 'transcribe', 'transcribe');
         } else {
-          runner = path.join(binDir, 'linux', 'transcribe');
+          runner = path.join(binDir, 'linux', 'transcribe', 'transcribe');
         }
       }
       const useBundled = runner && require('fs').existsSync(runner);
@@ -241,6 +248,20 @@ function registerIpcHandlers() {
       
       const args = useBundled ? [audioPath, whisperModel] : [pythonScript, audioPath, whisperModel];
       const cmd = useBundled ? runner : pythonExecutable;
+      
+      const env = { 
+        ...process.env,
+        GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+        SUPABASE_URL: process.env.SUPABASE_URL,
+        SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
+      };
+
+      if (app.isPackaged) {
+        const binDir = path.join(process.resourcesPath, 'bin', process.platform === 'win32' ? 'win' : (process.platform === 'darwin' ? 'mac' : 'linux'));
+        const pathVar = process.platform === 'win32' ? 'Path' : 'PATH';
+        env[pathVar] = `${binDir}${path.delimiter}${process.env[pathVar] || ''}`;
+      }
+
       const pythonProcess = spawn(cmd, args, { env });
 
       let stdout = '';
@@ -322,11 +343,11 @@ function registerIpcHandlers() {
       if (app.isPackaged) {
         const binDir = path.join(process.resourcesPath, 'bin');
         if (process.platform === 'win32') {
-          runner = path.join(binDir, 'win', 'tabbycat_scraper.exe');
+          runner = path.join(binDir, 'win', 'tabbycat_scraper', 'tabbycat_scraper.exe');
         } else if (process.platform === 'darwin') {
-          runner = path.join(binDir, 'mac', 'tabbycat_scraper');
+          runner = path.join(binDir, 'mac', 'tabbycat_scraper', 'tabbycat_scraper');
         } else {
-          runner = path.join(binDir, 'linux', 'tabbycat_scraper');
+          runner = path.join(binDir, 'linux', 'tabbycat_scraper', 'tabbycat_scraper');
         }
       }
       const useBundled = runner && require('fs').existsSync(runner);
@@ -353,7 +374,14 @@ function registerIpcHandlers() {
         const cmdArgs = useBundled ? args : [pythonScript, ...args];
         const cmd = useBundled ? runner : pythonExecutable;
 
-        const pythonProcess = spawn(cmd, cmdArgs);
+        const env = { ...process.env };
+        if (app.isPackaged) {
+          const binDir = path.join(process.resourcesPath, 'bin', process.platform === 'win32' ? 'win' : (process.platform === 'darwin' ? 'mac' : 'linux'));
+          const pathVar = process.platform === 'win32' ? 'Path' : 'PATH';
+          env[pathVar] = `${binDir}${path.delimiter}${process.env[pathVar] || ''}`;
+        }
+
+        const pythonProcess = spawn(cmd, cmdArgs, { env });
         let outputData = '';
         let errorData = '';
         
@@ -401,11 +429,11 @@ function registerIpcHandlers() {
     if (app.isPackaged) {
       const binDir = path.join(process.resourcesPath, 'bin');
       if (process.platform === 'win32') {
-        runner = path.join(binDir, 'win', 'prep_agent.exe');
+        runner = path.join(binDir, 'win', 'prep_agent', 'prep_agent.exe');
       } else if (process.platform === 'darwin') {
-        runner = path.join(binDir, 'mac', 'prep_agent');
+        runner = path.join(binDir, 'mac', 'prep_agent', 'prep_agent');
       } else {
-        runner = path.join(binDir, 'linux', 'prep_agent');
+        runner = path.join(binDir, 'linux', 'prep_agent', 'prep_agent');
       }
     }
     
@@ -422,10 +450,18 @@ function registerIpcHandlers() {
   }
   
   function getPrepEnv() {
-    return { 
+    const env = { 
       ...process.env,
       GEMINI_API_KEY: process.env.GEMINI_API_KEY || store.get('geminiApiKey')
     };
+
+    if (app.isPackaged) {
+      const binDir = path.join(process.resourcesPath, 'bin', process.platform === 'win32' ? 'win' : (process.platform === 'darwin' ? 'mac' : 'linux'));
+      const pathVar = process.platform === 'win32' ? 'Path' : 'PATH';
+      env[pathVar] = `${binDir}${path.delimiter}${process.env[pathVar] || ''}`;
+    }
+
+    return env;
   }
 
   // Phase 1: Plan only — returns search queries

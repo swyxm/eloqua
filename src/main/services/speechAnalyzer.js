@@ -31,9 +31,9 @@ class SpeechAnalyzer {
       let runner;
       if (app && app.isPackaged) {
         const binDir = path.join(process.resourcesPath, 'bin');
-        if (process.platform === 'win32') runner = path.join(binDir, 'win', 'speech_analyzer.exe');
-        else if (process.platform === 'darwin') runner = path.join(binDir, 'mac', 'speech_analyzer');
-        else runner = path.join(binDir, 'linux', 'speech_analyzer');
+        if (process.platform === 'win32') runner = path.join(binDir, 'win', 'speech_analyzer', 'speech_analyzer.exe');
+        else if (process.platform === 'darwin') runner = path.join(binDir, 'mac', 'speech_analyzer', 'speech_analyzer');
+        else runner = path.join(binDir, 'linux', 'speech_analyzer', 'speech_analyzer');
       }
       const useBundled = runner && require('fs').existsSync(runner);
       const pythonExecutable = process.platform === 'win32' ? 'python' : 'python3';
@@ -56,6 +56,12 @@ class SpeechAnalyzer {
         SUPABASE_URL: process.env.SUPABASE_URL,
         SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY
       };
+
+      if (app && app.isPackaged) {
+        const binDir = path.join(process.resourcesPath, 'bin', process.platform === 'win32' ? 'win' : (process.platform === 'darwin' ? 'mac' : 'linux'));
+        const pathVar = process.platform === 'win32' ? 'Path' : 'PATH';
+        env[pathVar] = `${binDir}${path.delimiter}${process.env[pathVar] || ''}`;
+      }
 
       const cmd = useBundled ? runner : pythonExecutable;
       const args = useBundled ? pythonArgs.slice(1) : pythonArgs;

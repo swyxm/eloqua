@@ -66,16 +66,16 @@ jobs:
 
     - name: Build Python Binaries (ML)
       run: |
-        pyinstaller --onefile --name transcribe src/main/python/transcribe.py
-        pyinstaller --onefile --name speech_analyzer src/main/python/speech_analyzer.py
-        pyinstaller --onefile --name model_manager src/main/python/model_manager.py
-        pyinstaller --onefile --name debate_chat src/main/python/debate_chat.py
-        pyinstaller --onefile --name tabbycat_scraper src/main/python/tabbycat_scraper.py
+        pyinstaller --onedir --noupx --name transcribe src/main/python/transcribe.py
+        pyinstaller --onedir --noupx --name speech_analyzer src/main/python/speech_analyzer.py
+        pyinstaller --onedir --noupx --name model_manager src/main/python/model_manager.py
+        pyinstaller --onedir --noupx --name debate_chat src/main/python/debate_chat.py
+        pyinstaller --onedir --noupx --name tabbycat_scraper src/main/python/tabbycat_scraper.py
       shell: bash
 
     - name: Build Python Binaries (Prep Agent - lightweight)
       run: |
-        pyinstaller --onefile --name prep_agent \
+        pyinstaller --onedir --noupx --name prep_agent \
           --exclude-module torch \
           --exclude-module torchvision \
           --exclude-module torchaudio \
@@ -87,7 +87,6 @@ jobs:
           --exclude-module sklearn \
           --exclude-module pandas \
           --exclude-module matplotlib \
-          --strip \
           src/main/python/prep_agent.py
       shell: bash
 
@@ -96,37 +95,40 @@ jobs:
       shell: pwsh
       run: |
         New-Item -ItemType Directory -Force -Path resources/bin/win | Out-Null
-        Copy-Item dist/transcribe.exe resources/bin/win/
-        Copy-Item dist/speech_analyzer.exe resources/bin/win/
-        Copy-Item dist/model_manager.exe resources/bin/win/
-        Copy-Item dist/debate_chat.exe resources/bin/win/
-        Copy-Item dist/tabbycat_scraper.exe resources/bin/win/
-        Copy-Item dist/prep_agent.exe resources/bin/win/
+        Copy-Item -Recurse dist/transcribe resources/bin/win/
+        Copy-Item -Recurse dist/speech_analyzer resources/bin/win/
+        Copy-Item -Recurse dist/model_manager resources/bin/win/
+        Copy-Item -Recurse dist/debate_chat resources/bin/win/
+        Copy-Item -Recurse dist/tabbycat_scraper resources/bin/win/
+        Copy-Item -Recurse dist/prep_agent resources/bin/win/
         Copy-Item (Get-Command ffmpeg.exe).Source resources/bin/win/
+        Copy-Item (Get-Command ffprobe.exe).Source resources/bin/win/
 
     - name: Stage Binaries (macOS)
       if: runner.os == 'macOS'
       run: |
         mkdir -p resources/bin/mac
-        cp dist/transcribe resources/bin/mac/
-        cp dist/speech_analyzer resources/bin/mac/
-        cp dist/model_manager resources/bin/mac/
-        cp dist/debate_chat resources/bin/mac/
-        cp dist/tabbycat_scraper resources/bin/mac/
-        cp dist/prep_agent resources/bin/mac/
+        cp -r dist/transcribe resources/bin/mac/
+        cp -r dist/speech_analyzer resources/bin/mac/
+        cp -r dist/model_manager resources/bin/mac/
+        cp -r dist/debate_chat resources/bin/mac/
+        cp -r dist/tabbycat_scraper resources/bin/mac/
+        cp -r dist/prep_agent resources/bin/mac/
         cp "$(which ffmpeg)" resources/bin/mac/
+        cp "$(which ffprobe)" resources/bin/mac/
 
     - name: Stage Binaries (Linux)
       if: runner.os == 'Linux'
       run: |
         mkdir -p resources/bin/linux
-        cp dist/transcribe resources/bin/linux/
-        cp dist/speech_analyzer resources/bin/linux/
-        cp dist/model_manager resources/bin/linux/
-        cp dist/debate_chat resources/bin/linux/
-        cp dist/tabbycat_scraper resources/bin/linux/
-        cp dist/prep_agent resources/bin/linux/
+        cp -r dist/transcribe resources/bin/linux/
+        cp -r dist/speech_analyzer resources/bin/linux/
+        cp -r dist/model_manager resources/bin/linux/
+        cp -r dist/debate_chat resources/bin/linux/
+        cp -r dist/tabbycat_scraper resources/bin/linux/
+        cp -r dist/prep_agent resources/bin/linux/
         cp "$(which ffmpeg)" resources/bin/linux/
+        cp "$(which ffprobe)" resources/bin/linux/
 
     - name: Install dependencies
       run: npm ci
