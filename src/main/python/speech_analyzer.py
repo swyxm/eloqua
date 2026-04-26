@@ -8,7 +8,6 @@ import os
 import ssl
 import urllib.request
 import requests
-from dotenv import load_dotenv
 
 def transcribe(audio_path, pre_text=None, pre_duration=None, model_name=None):
     if pre_text is not None and pre_duration is not None:
@@ -186,7 +185,6 @@ def call_gemini_api(system_prompt, user_prompt):
         return {"error": f"Unexpected error: {str(e)}"}
 
 def main(audio_path, motion, format, position, place_in_round=None, specific_feedback=None):
-    load_dotenv()
     
     format = format.upper()
     if format not in ["BP", "WSDC"]:

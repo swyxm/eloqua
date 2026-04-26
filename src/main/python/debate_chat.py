@@ -2,9 +2,6 @@ import json
 import sys
 import requests
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 def call_gemini_api(messages):
     gemini_api_key = os.getenv('GEMINI_API_KEY')
