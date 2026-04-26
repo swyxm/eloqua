@@ -459,7 +459,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { getSupabaseClient } from '../lib/supabaseClient.js'
+import { getDataClient } from '../lib/dataClient.js'
 import { mapPosition } from '../../shared/utils/positionMapping.js'
 
 const emit = defineEmits(['scrape-started', 'scrape-completed'])
@@ -649,7 +649,7 @@ const saveToDatabase = async () => {
   }
 
   try {
-    const supabase = await getSupabaseClient()
+    const supabase = await getDataClient()
 
     const tournamentNameFinal = (editableGeneral.value.tournamentName || lastScrapeInfo.value?.tournament || '').trim()
     if (!tournamentNameFinal) {

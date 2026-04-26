@@ -341,7 +341,7 @@
 
     <script setup>
     import { ref, reactive, onMounted, watch, nextTick, computed } from 'vue'
-import { getSupabaseClient } from '../lib/supabaseClient.js'
+import { getDataClient } from '../lib/dataClient.js'
 import Chart from 'chart.js/auto'
 import { mapPosition } from '../../shared/utils/positionMapping.js'
 import ProgressRing from '../../shared/components/ProgressRing.vue'
@@ -1365,7 +1365,7 @@ import { MicVocal, TrendingUp, ChevronsUp, ChevronUp, ChevronsDown, ChevronDown,
 
     watch([compTournamentA, compTournamentB, compPartnerA, compPartnerB], () => updatePinnedComparisons())
     onMounted(async () => {
-    supabase = await getSupabaseClient()
+    supabase = await getDataClient()
     loadStats()
     })
     </script>

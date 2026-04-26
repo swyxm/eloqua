@@ -79,7 +79,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getSupabaseClient } from '../lib/supabaseClient.js'
+import { getDataClient } from '../lib/dataClient.js'
 
 const emit = defineEmits(['partner-added'])
 
@@ -147,7 +147,7 @@ const addPartner = async () => {
 }
 
 onMounted(async () => {
-  supabase = await getSupabaseClient()
+  supabase = await getDataClient()
   await loadRecentPartners()
 })
 </script>

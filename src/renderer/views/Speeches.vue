@@ -337,7 +337,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { store } from '../store.js'
-import { getSupabaseClient } from '../lib/supabaseClient.js'
+import { getDataClient } from '../lib/dataClient.js'
 import SpeechCard from '../components/SpeechCard.vue'
 import TournamentCard from '../components/TournamentCard.vue'
 import EloquaLogo from '../components/EloquaLogo.vue'
@@ -354,6 +354,7 @@ const showSuccessMessage = ref(false)
 const viewMode = ref('timeline')
 const searchQuery = ref('')
 const currentPage = ref(1)
+const selectedSpeech = ref(null)
 
 const filters = ref({
   format: '',
@@ -751,7 +752,7 @@ watch([searchQuery, filters, sortBy], () => {
 
 
 onMounted(async () => {
-  supabase = await getSupabaseClient()
+  supabase = await getDataClient()
   loadSpeeches()
   loadTournaments()
   

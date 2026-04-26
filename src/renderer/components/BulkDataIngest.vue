@@ -138,7 +138,7 @@
 
 <script setup>
 import { ref, reactive, watch } from 'vue'
-import { getSupabaseClient } from '../lib/supabaseClient.js'
+import { getDataClient } from '../lib/dataClient.js'
 
 const emit = defineEmits(['data-imported'])
 
@@ -259,7 +259,7 @@ const importData = async () => {
   importProgress.total = 100
 
   try {
-    const supabase = await getSupabaseClient()
+    const supabase = await getDataClient()
     const text = await selectedFile.value.text()
     let dataToImport = []
 

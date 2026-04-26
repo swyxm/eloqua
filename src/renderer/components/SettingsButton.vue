@@ -89,7 +89,7 @@
                     v-model="workingSettings.databaseMode"
                     class="w-full px-3 py-2 border border-border rounded-md bg-background text-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
-                    <option value="local" disabled class="text-muted">Local Only (SQLite) - Coming Soon</option>
+                    <option value="local">Local Only (SQLite)</option>
                     <option value="cloud">Cloud Sync (Supabase)</option>
                   </select>
                   <p class="text-xs text-muted mt-1">

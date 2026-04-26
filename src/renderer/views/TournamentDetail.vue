@@ -125,7 +125,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getSupabaseClient } from '../lib/supabaseClient.js'
+import { getDataClient } from '../lib/dataClient.js'
 import { mapPosition } from '../../shared/utils/positionMapping.js'
 import Loader from '../components/LoadingState.vue'
 
@@ -252,7 +252,7 @@ const navigateToSpeech = (speechId) => {
 }
 
 onMounted(async () => {
-  supabase.value = await getSupabaseClient()
+  supabase.value = await getDataClient()
   loadTournament()
 })
 </script>

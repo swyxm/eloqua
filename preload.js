@@ -13,7 +13,8 @@ contextBridge.exposeInMainWorld('electron', {
         'install-whisper-model',
         'scrape-tabbycat',
         'prep-plan',
-        'prep-research'
+        'prep-research',
+        'db-query'
       ];
       if (validChannels.includes(channel)) {
         return ipcRenderer.invoke(channel, ...args);
@@ -24,6 +25,7 @@ contextBridge.exposeInMainWorld('electron', {
 });
 
 contextBridge.exposeInMainWorld('electronAPI', {
+  dbQuery: (table, operations) => ipcRenderer.invoke('db-query', table, operations),
   selectFile: () => ipcRenderer.invoke('select-file'),
   analyzeSpeech: (data) => ipcRenderer.invoke('analyze-speech', data),
   chat: (data) => ipcRenderer.invoke('chat', data),

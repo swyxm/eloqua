@@ -174,7 +174,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { getSupabaseClient } from '../lib/supabaseClient.js'
+import { getDataClient } from '../lib/dataClient.js'
 
 const emit = defineEmits(['round-added'])
 
@@ -338,7 +338,7 @@ const addRound = async () => {
 }
 
 onMounted(async () => {
-  supabase = await getSupabaseClient()
+  supabase = await getDataClient()
   await loadTournaments()
 })
 </script>

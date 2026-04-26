@@ -355,7 +355,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { getSupabaseClient } from '../lib/supabaseClient.js'
+import { getDataClient } from '../lib/dataClient.js'
 import { generateRoundList, isBreakRound, getBreakRounds } from '../../shared/utils/breakRounds.js'
 
 const emit = defineEmits(['tournament-added'])
@@ -665,7 +665,7 @@ const addTournament = async () => {
 }
 
 onMounted(async () => {
-  supabase = await getSupabaseClient()
+  supabase = await getDataClient()
   await loadRecentTournaments()
 })
 </script>

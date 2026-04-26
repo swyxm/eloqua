@@ -6,10 +6,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-GEMINI_API_URL = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={GEMINI_API_KEY}'
-
 def call_gemini_api(messages):
+    gemini_api_key = os.getenv('GEMINI_API_KEY')
+    if not gemini_api_key:
+        return "Error: GEMINI_API_KEY is not set."
+        
+    api_url = f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={gemini_api_key}'
+    
     contents = []
     for msg in messages:
         role = "user" if msg["role"] == "user" else "model"
@@ -29,7 +32,7 @@ def call_gemini_api(messages):
     }
     
     try:
-        response = requests.post(GEMINI_API_URL, json=payload, timeout=30)
+        response = requests.post(api_url, json=payload, timeout=30)
         response.raise_for_status()
         
         result = response.json()
@@ -40,7 +43,7 @@ def call_gemini_api(messages):
             
     except Exception as e:
         print(f"Error calling Gemini API: {e}", file=sys.stderr)
-        return "I'm having trouble connecting right now. Please try again."
+        return f"I'm having trouble connecting right now. Please try again. (Error: {str(e)})"
 
 def get_coach_response(speech_data, user_message, conversation_history=[]):    
     recent_context = conversation_history[-10:] if len(conversation_history) > 10 else conversation_history

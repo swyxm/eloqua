@@ -80,7 +80,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { getSupabaseClient } from '../lib/supabaseClient.js'
+import { getDataClient } from '../lib/dataClient.js'
 import IngestCard from '../components/IngestCard.vue'
 import TabbycatScraper from '../components/TabbycatScraper.vue'
 import PartnerIngest from '../components/PartnerIngest.vue'
@@ -133,7 +133,7 @@ const onRoundAdded = (round) => {
 }
 
 onMounted(async () => {
-  supabase = await getSupabaseClient()
+  supabase = await getDataClient()
 })
 </script>
 

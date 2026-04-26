@@ -446,7 +446,7 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getSupabaseClient } from '../lib/supabaseClient.js'
+import { getDataClient } from '../lib/dataClient.js'
 import ChatInterface from '../components/ChatInterface.vue'
 import { mapPosition } from '../../shared/utils/positionMapping.js'
 import { renderMarkdown } from '../../shared/utils/markdownRenderer.js'
@@ -924,7 +924,7 @@ const getValidPositions = (format) => {
 }
 
 onMounted(async () => {
-  supabase = await getSupabaseClient()
+  supabase = await getDataClient()
   loadSpeech()
 })
 </script>

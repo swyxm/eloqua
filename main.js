@@ -2,7 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
 const { spawn } = require('child_process');
-
+const dbService = require('./src/main/services/database');
 
 let SpeechAnalyzer, debateCoach, speechAnalyzer;
 
@@ -97,6 +97,10 @@ function registerIpcHandlers() {
       console.error('Error getting settings:', error);
       return {};
     }
+  });
+
+  ipcMain.handle('db-query', async (event, table, operations) => {
+    return await dbService.query(table, operations);
   });
 
   ipcMain.handle('save-settings', async (event, settings) => {
@@ -534,6 +538,7 @@ function registerIpcHandlers() {
 }
 
 app.whenReady().then(() => {
+  dbService.init();
   registerIpcHandlers();
   createWindow();
 });

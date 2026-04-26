@@ -210,7 +210,7 @@ const components = {
   ChevronDown,
   ChevronsDown
 };
-import { getSupabaseClient } from '../lib/supabaseClient.js';
+import { getDataClient } from '../lib/dataClient.js';
 
 // Initialize Supabase client
 let supabase;
@@ -310,7 +310,7 @@ const canAnalyze = computed(() => {
 });
 
 onMounted(async () => {
-  supabase = await getSupabaseClient();
+  supabase = await getDataClient();
   await loadRecentData();
 });
 
