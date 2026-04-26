@@ -26,7 +26,7 @@ def init_llm(model_name="gemini-2.5-flash"):
 def planner_node(state: AgentState) -> dict:
     motion = state["motion"]
     side = state.get("side", "proposition")
-    side_label = "Proposition / Government" if side == "proposition" else "Opposition"
+    side_label = "Proposition" if side == "proposition" else "Opposition"
     llm = init_llm()
     
     prompt = f"""You are an elite competitive debate researcher. Your team is on the {side_label} side, preparing for:
@@ -130,7 +130,7 @@ def drafter_node(state: AgentState) -> dict:
         
     motion = state["motion"]
     side = state.get("side", "proposition")
-    side_label = "Proposition / Government" if side == "proposition" else "Opposition"
+    side_label = "Proposition" if side == "proposition" else "Opposition"
     raw_research = state["raw_research"]
     llm = init_llm("gemini-2.5-flash")
     
@@ -215,10 +215,13 @@ def main():
                 "error": ""
             }
             final_state = graph.invoke(initial_state)
-            output = {
-                "success": True,
-                "queries": final_state.get("queries", [])
-            }
+            if final_state.get("error"):
+                output = {"success": False, "error": final_state["error"]}
+            else:
+                output = {
+                    "success": True,
+                    "queries": final_state.get("queries", [])
+                }
             
         elif args.mode == "research":
             if not args.queries:
@@ -235,10 +238,13 @@ def main():
                 "error": ""
             }
             final_state = graph.invoke(initial_state)
-            output = {
-                "success": True,
-                "document": final_state.get("final_prep_doc", "")
-            }
+            if final_state.get("error"):
+                output = {"success": False, "error": final_state["error"]}
+            else:
+                output = {
+                    "success": True,
+                    "document": final_state.get("final_prep_doc", "")
+                }
             
         else:  # full
             graph = build_full_graph()
@@ -251,11 +257,14 @@ def main():
                 "error": ""
             }
             final_state = graph.invoke(initial_state)
-            output = {
-                "success": True,
-                "queries": final_state.get("queries", []),
-                "document": final_state.get("final_prep_doc", "")
-            }
+            if final_state.get("error"):
+                output = {"success": False, "error": final_state["error"]}
+            else:
+                output = {
+                    "success": True,
+                    "queries": final_state.get("queries", []),
+                    "document": final_state.get("final_prep_doc", "")
+                }
         
         print(json.dumps(output))
     except Exception as e:
@@ -266,5 +275,8 @@ def main():
         print(json.dumps(error_output))
 
 if __name__ == "__main__":
-    sys.stdout.reconfigure(encoding='utf-8')
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except (AttributeError, OSError):
+        pass
     main()
